@@ -1,18 +1,28 @@
 // Dueño: Héctor · HU-01a Ver catálogo de equipos (KAN-6) y HU-04 Ver detalle del equipo (KAN-8)
-// VERSIÓN FALSA: responde datos fijos con la forma definitiva. Héctor la reemplaza por la real.
 import { Router } from 'express';
+import { query } from '../db.js';
+import { errorHttp } from '../errores.js';
 
 const r = Router();
 
-const FALSOS = [
-  { id: 1, nombre: 'Montacargas Toyota 8FG25 (FALSO)', tipo: 'Montacargas', modelo: '8FG25',
-    caracteristicas: 'Capacidad 2.5 t', tarifaDia: 1200, foto: 'https://placehold.co/480x300?text=Falso' },
-];
-
 // HU-01a · GET /api/equipos -> [{ id, nombre, tipo, modelo, tarifaDia, foto }]
-r.get('/', (req, res) => res.json(FALSOS));
+r.get('/', async (req, res) => {
+  const { rows } = await query(
+    'SELECT id, nombre, tipo, modelo, tarifa_dia AS "tarifaDia", foto FROM equipos ORDER BY id',
+  );
+  res.json(rows);
+});
 
-// HU-04 · GET /api/equipos/:id -> { id, nombre, tipo, modelo, caracteristicas, tarifaDia, foto }
-r.get('/:id', (req, res) => res.json({ ...FALSOS[0], id: Number(req.params.id) }));
+// HU-04 · GET /api/equipos/:id -> { id, nombre, tipo, modelo, caracteristicas, tarifaDia, foto } · 404
+r.get('/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id < 1) throw errorHttp(404, 'Equipo no encontrado');
+  const { rows } = await query(
+    'SELECT id, nombre, tipo, modelo, caracteristicas, tarifa_dia AS "tarifaDia", foto FROM equipos WHERE id = $1',
+    [id],
+  );
+  if (rows.length === 0) throw errorHttp(404, 'Equipo no encontrado');
+  res.json(rows[0]);
+});
 
 export default r;
