@@ -23,7 +23,7 @@ export default function DetalleCotizacion() {
     <section>
       <p><Link to="/panel/cotizaciones">← Cotizaciones</Link></p>
       <h1>{cot.folio} <Estado valor={cot.estado} /></h1>
-      <p className="tenue">Origen: {cot.origen} · Recibida el {fecha(cot.creadaEn)}</p>
+      <p className="tenue">Origen: {cot.origen} · Recibida el {new Date(cot.creadaEn).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
 
       <div className="dos-columnas" style={{ marginTop: 16 }}>
         <div className="panel">
