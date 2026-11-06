@@ -1,0 +1,24 @@
+# Dueño de cada archivo: si alguien más lo cambia, GitHub le pide aprobación al dueño.
+# Lo que no aparece abajo es BASE y su dueño es Chris.
+*                                              @chrisTito402
+
+# Héctor · HU-01a, HU-04, HU-15a
+/backend/src/rutas/equipos.rutas.js            @USUARIO_HECTOR
+/backend/src/rutas/aprobaciones.rutas.js       @USUARIO_HECTOR
+/frontend/src/paginas/Catalogo.jsx             @USUARIO_HECTOR
+/frontend/src/paginas/DetalleEquipo.jsx        @USUARIO_HECTOR
+/frontend/src/logica/agregarLinea.js           @USUARIO_HECTOR
+/frontend/src/componentes/BotonAprobar.jsx     @USUARIO_HECTOR
+
+# Chris · HU-13a, HU-14a
+/compartido/costos.js                          @chrisTito402
+/frontend/src/componentes/DesgloseCostos.jsx   @chrisTito402
+/backend/src/rutas/solicitudes.rutas.js        @chrisTito402
+/frontend/src/paginas/MiCotizacion.jsx         @chrisTito402
+
+# Katia · HU-06, HU-10
+/compartido/validarCliente.js                  @katianavarez
+/frontend/src/componentes/FormularioCliente.jsx @katianavarez
+/backend/src/rutas/consultas.rutas.js          @katianavarez
+/frontend/src/paginas/PanelCotizaciones.jsx    @katianavarez
+/frontend/src/paginas/DetalleCotizacion.jsx    @katianavarez
