@@ -1,0 +1,69 @@
+.gestion .gestion-brand { color: var(--tinta); font-weight: 750; text-decoration: none; font-size: 13px; padding: 0 12px; margin-bottom: 32px; }
+.gestion-brand small { display: block; font-weight: 400; margin-top: 8px; }
+.gestion .sidebar a { text-decoration: none; }
+.gestion .menu-help { font-size: 12px; color: var(--gris); padding: 0 12px; }
+.gestion .gestion-topbar { justify-content: flex-start; flex-wrap: nowrap; }
+.gestion-topbar small { display: block; color: var(--gris); margin-top: 4px; }
+.gestion .catalog-return { margin-left: auto; white-space: nowrap; font-size: 13px; }
+.gestion .skip-link { position: fixed; top: -80px; left: 16px; z-index: 100; padding: 12px; background: white; }
+.gestion .skip-link:focus { top: 8px; }
+.gestion .mobile-menu-close { display: none; }
+.gestion .main-content { animation: none; padding-bottom: 32px; }
+.gestion .section-intro { color: var(--gris); max-width: 700px; margin: 8px 0 24px; }
+.gestion .workflow-steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); list-style: none; gap: 8px; padding: 0; margin: 20px 0 28px; }
+.gestion .workflow-steps li { padding: 12px; background: white; border: 1px solid var(--borde); border-radius: 10px; font-size: 12px; color: var(--gris); }
+.gestion .workflow-steps li.current { border-color: var(--naranja); color: var(--naranja); background: var(--naranja-suave); font-weight: 700; }
+.gestion .workflow-steps li.complete { color: var(--verde); }
+.gestion .workflow-steps span { display: block; font-size: 10px; margin-bottom: 5px; }
+.gestion .stage-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 24px; }
+.gestion .stage-tabs a { color: var(--gris); border: 1px solid var(--borde); border-radius: 8px; background: white; padding: 10px 14px; text-decoration: none; font-size: 13px; }
+.gestion .stage-tabs a.active { background: var(--naranja-suave); border-color: var(--naranja); color: var(--naranja); font-weight: 650; }
+.gestion .stage-tabs small { margin-left: 8px; color: inherit; }
+.gestion .flow-notice { padding: 20px; border: 1px solid #b7ddc7; background: #f0f9f3; border-radius: 10px; margin: 0 0 24px; }
+.gestion .flow-notice h2 { font-size: 16px; margin-bottom: 8px; }
+.gestion .flow-notice p { margin-bottom: 12px; color: #446252; }
+.gestion .flow-notice .button { margin: 4px 8px 0 0; }
+.gestion .flow-notice a { color: #28543d; }
+.gestion .home-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px; }
+.gestion .home-card { display: flex; flex-direction: column; padding: 24px; border: 1px solid var(--borde); border-radius: 12px; background: white; text-decoration: none; color: var(--tinta); }
+.gestion .home-card:hover { border-color: var(--naranja); }
+.gestion .home-card h2 { margin: 8px 0; }
+.gestion .home-card p { color: var(--gris); font-size: 13px; margin-bottom: 18px; flex: 1; }
+.gestion .home-card strong { color: var(--naranja); font-size: 13px; }
+.gestion .home-card .home-count { font-size: 28px; color: var(--tinta); }
+.gestion .list-toolbar { display: flex; gap: 16px; align-items: end; flex-wrap: wrap; margin-bottom: 20px; }
+.gestion .list-toolbar label { display: block; flex: 1; min-width: 180px; font-size: 12px; color: var(--gris); }
+.gestion .list-toolbar input, .gestion .list-toolbar select { display: block; margin-top: 6px; }
+.gestion .commercial-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; margin-bottom: 24px; }
+.gestion .commercial-grid h2 { margin-bottom: 16px; }
+.gestion .table-scroll { overflow-x: auto; }
+.gestion .gestion-table { width: 100%; border-collapse: collapse; text-align: left; }
+.gestion .gestion-table th, .gestion .gestion-table td { padding: 14px 12px; border-bottom: 1px solid var(--borde); font-size: 13px; text-align: left; }
+.gestion .gestion-table th { color: var(--gris); font-weight: 500; }
+.gestion .gestion-table small { display: block; }
+.gestion .gestion-table .total td { font-weight: 700; }
+.gestion .assignment-card { border: 1px solid var(--borde); border-radius: 10px; padding: 20px; background: white; margin-bottom: 16px; scroll-margin-top: 24px; }
+.gestion .assignment-card summary { cursor: pointer; line-height: 1.8; }
+.gestion .assignment-card form { border-top: 1px solid var(--borde); margin-top: 18px; padding-top: 18px; }
+.gestion .assignment-card .field small { display: block; margin: 5px 0; }
+.gestion .assignment-fields, .gestion .operation-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
+.gestion .commercial-grid + .simple-actions { margin-top: 24px; }
+.gestion .flow-notice { margin-top: 20px; }
+.gestion .related-rentals { margin: 20px 0; }
+.gestion .related-rentals a { display: inline-block; padding: 8px 12px; margin: 4px 8px 4px 0; background: white; border: 1px solid var(--borde); border-radius: 8px; }
+.gestion .operation-header { margin-bottom: 24px; }
+.gestion .persistent-success { display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+@media (max-width: 900px) {
+  .gestion .home-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gestion .commercial-grid { grid-template-columns: 1fr; }
+  .gestion .workflow-steps { display: flex; overflow-x: auto; }
+  .gestion .workflow-steps li { min-width: 130px; flex: 1; }
+}
+@media (max-width: 700px) {
+  .gestion .mobile-menu-close { display: block; }
+  .gestion .gestion-topbar small { display: none; }
+  .gestion .home-grid { grid-template-columns: 1fr; }
+  .gestion .sidebar:not(.open) { visibility: hidden; }
+  .gestion .persistent-success { align-items: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) { .gestion *, .gestion *::before, .gestion *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }

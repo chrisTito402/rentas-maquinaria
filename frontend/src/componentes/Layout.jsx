@@ -9,10 +9,10 @@ export default function Layout() {
       <header className="encabezado">
         <div className="contenedor encabezado-fila">
           <NavLink to="/" className="marca">Renta de Maquinaria</NavLink>
-          <nav>
+          <nav aria-label="Navegación principal">
             <NavLink to="/" end>Catálogo</NavLink>
             <NavLink to="/mi-cotizacion">Mi cotización {lineas.length > 0 && <span className="globo">{lineas.length}</span>}</NavLink>
-            <NavLink to="/panel/cotizaciones">Panel comercial</NavLink>
+            <NavLink to="/gestion/inicio">Gestión</NavLink>
           </nav>
         </div>
       </header>

@@ -32,8 +32,8 @@ export default function BotonAprobar({ cotizacion, onAprobada }) {
 
   return (
     <div>
-      <button type="button" onClick={aprobar} disabled={aprobando}>
-        {aprobando ? 'Aprobando…' : 'Aprobar'}
+      <button className="button dark" type="button" onClick={aprobar} disabled={aprobando}>
+        {aprobando ? 'Aprobando…' : 'Aprobar cotización'}
       </button>
       {error && <p className="error" role="alert">{error}</p>}
       {mensaje && <p className="exito" role="status">{mensaje}</p>}

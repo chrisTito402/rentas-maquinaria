@@ -1,6 +1,9 @@
 import { pool } from './db.js';
 import { errorHttp } from './errores.js';
-import { applyOperation, initialData } from '../../compartido/operacion/operaciones.js';
+import { applyOperation } from '../../compartido/operacion/operaciones.js';
+import { cotizacionesAprobadas, asignarUnidades, normalizarUnidad } from './reservaciones.js';
+import { listarEquipos, nuevaUnidad } from './catalogo.js';
+import { coincideModelo } from '../../compartido/operacion/catalogo.js';
 
 async function transaccion(operacion) {
   const db = await pool.connect();
@@ -43,21 +46,26 @@ async function guardar(db, { units, rentals }) {
   `, [JSON.stringify(rentals)]);
 }
 
-async function leerConEjemplos(db) {
+async function leerPanel(db) {
   const data = await leer(db);
-  if (data.units.length) return data;
-  await guardar(db, initialData());
-  return leer(db);
+  const apartadas = new Set(data.rentals.map(renta => renta.cotizacionId));
+  const reservaciones = (await cotizacionesAprobadas(db)).filter(cotizacion => !apartadas.has(cotizacion.id));
+  const catalogo = await leerCatalogo(db);
+  return { ...data, reservaciones, catalogo };
 }
 
-export async function cargarOperacion() {
-  const data = await leer(pool);
-  return data.units.length ? data : transaccion(leerConEjemplos);
+async function leerCatalogo(db) {
+  const { rows: [schema] } = await db.query("SELECT to_regclass('equipos') IS NOT NULL AS existe");
+  return schema.existe ? listarEquipos(db) : [];
+}
+
+export function cargarOperacion() {
+  return leerPanel(pool);
 }
 
 export function registrarOperacion(id, accion, campos) {
   return transaccion(async db => {
-    const actual = await leerConEjemplos(db);
+    const actual = await leer(db);
     let data;
     try {
       data = applyOperation(actual, id, accion, campos);
@@ -65,14 +73,34 @@ export function registrarOperacion(id, accion, campos) {
       throw errorHttp(409, error.message);
     }
     await guardar(db, data);
-    return data;
+    return leerPanel(db);
   });
 }
 
-export function reiniciarOperacion() {
+export function crearApartado(cotizacionId, unidades) {
   return transaccion(async db => {
-    await db.query('DELETE FROM operacion_rentas; DELETE FROM operacion_equipos;');
-    await guardar(db, initialData());
-    return leer(db);
+    const actual = await leer(db);
+    if (actual.rentals.some(renta => renta.cotizacionId === cotizacionId)) return leerPanel(db);
+    const [cotizacion] = await cotizacionesAprobadas(db, cotizacionId);
+    if (!cotizacion) throw errorHttp(404, 'No se encontró una cotización aprobada con ese folio.');
+    await guardar(db, asignarUnidades(actual, cotizacion, unidades));
+    return leerPanel(db);
+  });
+}
+
+export function registrarUnidad(equipoId, identificador) {
+  const id = normalizarUnidad(identificador);
+  if (!id || id.length > 64) throw errorHttp(400, 'Indica un identificador físico válido.');
+  return transaccion(async db => {
+    const equipo = (await leerCatalogo(db)).find(item => item.id === equipoId);
+    if (!equipo) throw errorHttp(404, 'No se encontró el modelo en el catálogo.');
+    const { units } = await leer(db);
+    const existente = units.find(unidad => normalizarUnidad(unidad.id) === id);
+    if (existente && !coincideModelo(existente, equipo)) {
+      throw errorHttp(409, `La unidad ${id} ya corresponde a otro modelo.`);
+    }
+    const unidad = existente ? { ...existente, catalogoId: equipo.id } : nuevaUnidad(equipo, id);
+    await guardar(db, { units: [unidad], rentals: [] });
+    return leerPanel(db);
   });
 }

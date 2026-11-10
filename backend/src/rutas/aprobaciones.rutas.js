@@ -10,16 +10,15 @@ const r = Router();
 r.patch('/:id/aprobar', async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id) || id < 1) throw errorHttp(404, 'Cotización no encontrada');
-  const { rows } = await query('SELECT id, folio, estado FROM cotizaciones WHERE id = $1', [id]);
-  if (rows.length === 0) throw errorHttp(404, 'Cotización no encontrada');
-  const cotizacion = rows[0];
-  if (cotizacion.estado !== 'Pendiente') {
-    throw errorHttp(409, 'Solo se aprueban cotizaciones Pendientes');
-  }
   const { rows: aprobada } = await query(
-    "UPDATE cotizaciones SET estado = 'Aprobada' WHERE id = $1 RETURNING id, folio, estado",
+    "UPDATE cotizaciones SET estado = 'Aprobada' WHERE id = $1 AND estado = 'Pendiente' RETURNING id, folio, estado",
     [id],
   );
+  if (!aprobada.length) {
+    const { rowCount } = await query('SELECT 1 FROM cotizaciones WHERE id = $1', [id]);
+    if (!rowCount) throw errorHttp(404, 'Cotización no encontrada');
+    throw errorHttp(409, 'Solo se aprueban cotizaciones Pendientes');
+  }
   res.json(aprobada[0]);
 });
 
