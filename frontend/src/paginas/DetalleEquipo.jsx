@@ -13,7 +13,7 @@ export default function DetalleEquipo() {
   const { agregar } = useCarrito();
   const [equipo, setEquipo] = useState(null);
   const [error, setError] = useState('');
-  const [cantidad, setCantidad] = useState(1);
+  const [cantidadTexto, setCantidadTexto] = useState('1');   // lo que se ve en el campo
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
   const [mensaje, setMensaje] = useState('');
@@ -26,9 +26,11 @@ export default function DetalleEquipo() {
       ));
   }, [id]);
 
+  // El campo puede quedar vacío mientras se escribe (para cambiar el 1 por otro número);
+  // la cantidad que se usa siempre queda entre 1 y MAX_CANTIDAD.
+  const cantidad = Math.min(MAX_CANTIDAD, Math.max(1, parseInt(cantidadTexto, 10) || 1));
   const cambiarCantidad = (valor) => {
-    const numero = Number(valor);
-    setCantidad(Number.isFinite(numero) ? Math.min(MAX_CANTIDAD, Math.max(1, numero)) : 1);
+    setCantidadTexto(valor.replace(/\D/g, '').slice(0, 2));
     setMensaje('');
   };
   const cambiarFecha = (poner, valor) => { poner(valor); setMensaje(''); };
@@ -69,8 +71,9 @@ export default function DetalleEquipo() {
             <h2>Agregar a mi cotización</h2>
             <p className="precio">{dinero(equipo.tarifaDia)} <small>/ día</small></p>
             <label htmlFor="cantidad">Cantidad (1 a {MAX_CANTIDAD})</label>
-            <input id="cantidad" type="number" min="1" max={MAX_CANTIDAD} value={cantidad}
-              onChange={(e) => cambiarCantidad(e.target.value)} />
+            <input id="cantidad" type="number" min="1" max={MAX_CANTIDAD} value={cantidadTexto}
+              onChange={(e) => cambiarCantidad(e.target.value)}
+              onBlur={() => setCantidadTexto(String(cantidad))} />
             <label htmlFor="inicio">Fecha de inicio</label>
             <input id="inicio" type="date" value={fechaInicio}
               onChange={(e) => cambiarFecha(setFechaInicio, e.target.value)} />
