@@ -44,7 +44,7 @@ export default function FlujoOperacion({ vista }) {
         if (vigente && lectura === version.current) { setErrorCarga('No se pudo actualizar la operación. Intenta de nuevo.'); setCargando(false); }
       }
     }
-    cargar();
+    void cargar();
     window.addEventListener('focus', cargar);
     document.addEventListener('visibilitychange', cargar);
     return () => { vigente = false; window.removeEventListener('focus', cargar); document.removeEventListener('visibilitychange', cargar); };

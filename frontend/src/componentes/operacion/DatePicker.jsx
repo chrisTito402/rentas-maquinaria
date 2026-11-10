@@ -60,6 +60,13 @@ export default function DatePicker({ name, label, defaultValue }) {
   useEffect(() => { if (open) dayButtons.current.get(focusedKey)?.focus(); }, [open, focusedKey, position.visibility]);
 
   const close = () => { setOpen(false); trigger.current?.focus(); };
+  const closeOnEscape = event => {
+    if (event.key === 'Escape' && open) {
+      event.preventDefault();
+      event.stopPropagation();
+      close();
+    }
+  };
   const select = date => { setValue(localDay(date)); close(); };
   const keyDown = (event, date) => {
     const amounts = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
@@ -72,15 +79,13 @@ export default function DatePicker({ name, label, defaultValue }) {
     if (next) { event.preventDefault(); event.stopPropagation(); setFocusedDate(next); }
   };
 
-  return <div className="field date-picker" ref={root} onKeyDown={event => {
-    if (event.key === 'Escape' && open) { event.preventDefault(); event.stopPropagation(); close(); }
-  }}>
+  return <div className="field date-picker" ref={root}>
     <span id={id + '-label'}>{label}</span>
     <input name={name} type="hidden" value={value}/>
-    <button ref={trigger} type="button" className="date-picker-trigger" aria-labelledby={id + '-label ' + id + '-value'} aria-expanded={open} aria-haspopup="dialog" aria-controls={open ? id + '-calendar' : undefined} onClick={() => {
+    <button ref={trigger} type="button" className="date-picker-trigger" aria-labelledby={id + '-label ' + id + '-value'} aria-expanded={open} aria-haspopup="dialog" aria-controls={open ? id + '-calendar' : undefined} onKeyDown={closeOnEscape} onClick={() => {
       if (open) close(); else { setFocusedDate(parseDate(value) || new Date()); setOpen(true); }
     }}><span id={id + '-value'}>{formatDate(selected)}</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M4 5h16v16H4z M8 3v4 M16 3v4 M4 10h16"/></svg></button>
-    {open && <section ref={popup} style={position} className="date-picker-popover" id={id + '-calendar'} role="dialog" aria-label={'Elegir ' + label.toLowerCase()}>
+    {open && <section ref={popup} style={position} className="date-picker-popover" id={id + '-calendar'} role="dialog" tabIndex={-1} aria-label={'Elegir ' + label.toLowerCase()} onKeyDown={closeOnEscape}>
       <div className="date-picker-heading">
         <button type="button" className="icon-button" aria-label="Mes anterior" onClick={() => setFocusedDate(moveMonth(focusedDate, -1))}>‹</button>
         <div className="date-picker-month"><select aria-label="Mes" value={month} onChange={event => setFocusedDate(moveMonth(focusedDate, Number(event.target.value) - month))}>{months.map((name, index) => <option value={index} key={name}>{name}</option>)}</select><select aria-label="Año" value={year} onChange={event => setFocusedDate(moveMonth(focusedDate, (Number(event.target.value) - year) * 12))}>{Array.from({ length: 21 }, (_, index) => year - 10 + index).map(value => <option key={value}>{value}</option>)}</select></div>

@@ -184,3 +184,44 @@ test('error de carga y recuperación sin perder el menú de gestión', async ({ 
   await expect(page.getByRole('heading', { name: 'Una renta, paso a paso' })).toBeVisible();
   await page.screenshot({ path: 'test-results/gestion-desktop.png', fullPage: true });
 });
+
+test('el calendario y los formularios se cierran con teclado o al pulsar fuera', async ({ page }) => {
+  const mock = await prepararAPI(page);
+  mock.iniciarAsignada();
+  await page.goto('/gestion/rentas/R-001');
+  const prepare = page.getByRole('button', { name: 'Registrar preparación', exact: true });
+  await prepare.click();
+  await page.getByLabel('Mecánico que revisó').fill('Luis');
+  await page.getByRole('combobox').selectOption('ready');
+  await page.getByRole('textbox', { name: 'Resultado de la revisión del mecánico' }).fill('Equipo listo');
+  await page.getByRole('button', { name: 'Guardar registro', exact: true }).click();
+
+  const deliver = page.getByRole('button', { name: 'Registrar entrega', exact: true });
+  await deliver.click();
+  const dialog = page.getByRole('dialog', { name: 'Registrar entrega', exact: true });
+  const date = dialog.getByRole('button', { name: /^Fecha / });
+  await date.click();
+  const calendar = page.getByRole('dialog', { name: 'Elegir fecha' });
+  await expect(calendar).toBeVisible();
+  const selected = calendar.getByRole('button', { pressed: true });
+  const label = await selected.getAttribute('aria-label');
+  await expect(selected).toBeFocused();
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('Enter');
+  await expect(calendar).toHaveCount(0);
+  await expect(date).not.toHaveAccessibleName('Fecha ' + label);
+  await date.click();
+  await page.keyboard.press('Escape');
+  await expect(calendar).toHaveCount(0);
+  await expect(dialog).toBeVisible();
+  await expect(date).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(deliver).toBeFocused();
+  await deliver.click();
+  await dialog.getByRole('textbox', { name: 'Nombre de quien recibe con el cliente' }).click();
+  await expect(dialog).toBeVisible();
+  await page.getByRole('button', { name: 'Cerrar ventana', exact: true }).click({ position: { x: 3, y: 3 } });
+  await expect(dialog).toHaveCount(0);
+  expect(mock.errores).toEqual([]);
+});
