@@ -1,6 +1,6 @@
 export async function listarEquipos(db) {
   const { rows } = await db.query(
-    'SELECT id, nombre, tipo, modelo, tarifa_dia AS "tarifaDia", foto FROM equipos ORDER BY id',
+    'SELECT id, nombre, tipo, modelo, caracteristicas, tarifa_dia AS "tarifaDia", foto FROM equipos ORDER BY id',
   );
   return rows;
 }
