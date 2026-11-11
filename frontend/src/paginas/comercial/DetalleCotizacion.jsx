@@ -7,6 +7,7 @@ import { api } from '../../api.js';
 import BotonAprobar from '../../componentes/BotonAprobar.jsx';
 import IconoCheck from '../../componentes/IconoCheck.jsx';
 import { EstadoCotizacion } from './Cotizaciones.jsx';
+import ProximoSprint from '../../componentes/ProximoSprint.jsx';
 import { dinero } from '@compartido/formato.js';
 
 const corta = (iso) => new Date(`${String(iso).slice(0, 10)}T12:00:00`).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -118,6 +119,9 @@ export default function DetalleCotizacion() {
               <BotonAprobar key={cot.id} cotizacion={cot} onAprobada={(r) => { setCot((actual) => ({ ...actual, estado: r.estado })); setAprobadaAhora(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
             </div>
           )}
+          <ProximoSprint hu="HU-07" kan="KAN-16" titulo="PDF y envío por WhatsApp">
+            Generar la cotización formal en PDF y mandársela al cliente por WhatsApp.
+          </ProximoSprint>
         </div>
       </div>
     </>
