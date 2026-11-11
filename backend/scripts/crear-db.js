@@ -26,12 +26,12 @@ try {
   await db.connect();
   await db.query('SET client_min_messages TO WARNING');
   await db.query(leer('schema.sql'));
-  await db.query(leer('semilla.sql'));
+  if (!process.argv.includes('--sin-semilla')) await db.query(leer('semilla.sql'));
   const { rows } = await db.query(
     'SELECT (SELECT COUNT(*) FROM equipos) AS equipos, (SELECT COUNT(*) FROM cotizaciones) AS cotizaciones',
   );
   await db.end();
-  console.log(`Listo: ${rows[0].equipos} equipos y ${rows[0].cotizaciones} cotizaciones de ejemplo.`);
+  console.log(`Listo: ${rows[0].equipos} equipos y ${rows[0].cotizaciones} cotizaciones.`);
 } catch (e) {
   if (e.message === 'NO_ENV') console.error('Falta el archivo backend/.env (copia .env.example como .env).');
   else if (e.code === '28P01') console.error('Contraseña incorrecta: revisa TU_CONTRASEÑA en backend/.env.');
