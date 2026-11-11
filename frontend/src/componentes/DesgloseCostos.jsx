@@ -1,34 +1,28 @@
 // Dueño: Chris · HU-13a Costo de la renta (KAN-10)
 // Uso: <DesgloseCostos lineas={[{ nombre, tarifaDia, cantidad, fechaInicio, fechaFin }]} />
+// Diseño: desglose de «2 · Detalle del equipo» y «3 · Solicitud de cotización» del Figma.
 import { calcularCostos } from '@compartido/costos.js';
-import { dinero, fecha } from '@compartido/formato.js';
+import { dinero } from '@compartido/formato.js';
 
-export default function DesgloseCostos({ lineas = [] }) {
+export default function DesgloseCostos({ lineas = [], detalle = false }) {
   const costos = calcularCostos(lineas);
+  const linea = costos.lineas[0];
   return (
-    <section className="panel" aria-label="Costo de la renta">
-      <h2>Costo de la renta</h2>
-      {costos.lineas.length === 0 && <p className="tenue">No hay equipos en la cotización.</p>}
-      <table className="desglose" aria-label="Desglose de costos">
-        <tbody>
-          {costos.lineas.map((linea, indice) => (
-            <tr key={indice}>
-              <td>
-                <strong>{linea.nombre || `Equipo ${linea.equipoId ?? indice + 1}`}</strong>
-                <p className="tenue">{fecha(linea.fechaInicio)} al {fecha(linea.fechaFin)}</p>
-                <p className="tenue">
-                  {linea.cantidad} × {linea.dias} {linea.dias === 1 ? 'día' : 'días'} × {dinero(linea.tarifaDia)} / día
-                </p>
-                {linea.dias === 0 && <p className="error">Elige fechas válidas para calcular la renta.</p>}
-              </td>
-              <td>{linea.dias > 0 ? dinero(linea.importe) : '—'}</td>
-            </tr>
-          ))}
-          <tr><td>Subtotal</td><td>{dinero(costos.subtotal)}</td></tr>
-          <tr><td>IVA (16 %)</td><td>{dinero(costos.iva)}</td></tr>
-          <tr className="total"><td>Total con IVA</td><td aria-live="polite">{dinero(costos.total)}</td></tr>
-        </tbody>
-      </table>
-    </section>
+    <div className="f-desglose" aria-label="Desglose de costos">
+      {detalle && linea && (
+        <div className="f-desglose__fila">
+          <span>Subtotal ({linea.dias} {linea.dias === 1 ? 'día' : 'días'} × {linea.cantidad > 1 ? `${linea.cantidad} × ` : ''}{dinero(linea.tarifaDia)})</span>
+          <strong>{dinero(linea.importe)}</strong>
+        </div>
+      )}
+      {!detalle && (
+        <div className="f-desglose__fila"><span>Subtotal de renta</span><strong>{dinero(costos.subtotal)}</strong></div>
+      )}
+      <div className="f-desglose__fila"><span>IVA (16 %)</span><strong>{dinero(costos.iva)}</strong></div>
+      <div className="f-desglose__total">
+        <span>Total con IVA{!detalle && <small>Incluye la renta e IVA.</small>}</span>
+        <strong aria-live="polite">{dinero(costos.total)}</strong>
+      </div>
+    </div>
   );
 }

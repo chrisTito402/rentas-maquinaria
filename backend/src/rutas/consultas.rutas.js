@@ -9,14 +9,18 @@ const r = Router();
 r.get('/', async (req, res) => {
   const q = String(req.query.q ?? '').trim();
   const { rows } = await query(
-    `SELECT c.id, c.folio, cl.nombre AS cliente, c.origen, c.estado, c.total,
+    `SELECT c.id, c.folio, cl.nombre AS cliente, cl.empresa, c.origen, c.estado, c.total,
             c.creada_en AS "creadaEn",
-            MIN(ce.fecha_inicio) AS "fechaInicio", MAX(ce.fecha_fin) AS "fechaFin"
+            MIN(ce.fecha_inicio) AS "fechaInicio", MAX(ce.fecha_fin) AS "fechaFin",
+            (ARRAY_AGG(e.nombre ORDER BY ce.id))[1] AS "primerEquipo",
+            COUNT(ce.id)::int AS "numEquipos"
        FROM cotizaciones c
        JOIN clientes cl ON cl.id = c.cliente_id
        LEFT JOIN cotizacion_equipos ce ON ce.cotizacion_id = c.id
+       LEFT JOIN equipos e ON e.id = ce.equipo_id
       WHERE $1::text = '' OR c.folio ILIKE '%' || $1::text || '%' OR cl.nombre ILIKE '%' || $1::text || '%'
-      GROUP BY c.id, cl.nombre
+            OR cl.empresa ILIKE '%' || $1::text || '%'
+      GROUP BY c.id, cl.nombre, cl.empresa
       ORDER BY c.creada_en DESC, c.id DESC`,
     [q],
   );

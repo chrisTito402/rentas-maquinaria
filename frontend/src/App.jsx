@@ -7,6 +7,9 @@ import MiCotizacion from './paginas/MiCotizacion.jsx';
 import PanelCotizaciones from './paginas/PanelCotizaciones.jsx';
 import DetalleCotizacion from './paginas/DetalleCotizacion.jsx';
 import Operacion from './paginas/operacion/FlujoOperacion.jsx';
+import PanelLayout from './paginas/comercial/PanelLayout.jsx';
+import CotizacionesComercial from './paginas/comercial/Cotizaciones.jsx';
+import DetalleCotizacionComercial from './paginas/comercial/DetalleCotizacion.jsx';
 
 function RutaAnterior({ comercial = false }) {
   const { seccion, id } = useParams();
@@ -29,6 +32,11 @@ export default function App() {
         <Route path="inventario" element={<Operacion vista="equipos" />} />
         <Route path="historial" element={<Operacion vista="historial" />} />
         <Route path="*" element={<><h1>Página no encontrada</h1><Navigate to="/gestion/inicio" replace /></>} />
+      </Route>
+      <Route path="/comercial" element={<PanelLayout />}>
+        <Route index element={<Navigate to="cotizaciones" replace />} />
+        <Route path="cotizaciones" element={<CotizacionesComercial />} />
+        <Route path="cotizaciones/:id" element={<DetalleCotizacionComercial />} />
       </Route>
       <Route path="/admin/:seccion?" element={<RutaAnterior />} />
       <Route path="/panel/cotizaciones/:id?" element={<RutaAnterior comercial />} />
