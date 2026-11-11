@@ -351,7 +351,7 @@ body:has(.sitio), body:has(.comercial) { margin: 0; background: var(--f-fondo); 
   .comercial { grid-template-columns: 1fr; }
   .comercial-menu { position: static; height: auto; flex-direction: row; align-items: center; flex-wrap: wrap; gap: 12px; padding: 14px 16px; border-right: 0; border-bottom: 1px solid var(--f-borde); }
   .comercial-menu nav { flex-direction: row; }
-  .comercial-menu__perfil, .comercial-perfil { display: none; }
+  .comercial-menu__perfil, .comercial-perfil, .comercial-menu .proximo { display: none; }
   .comercial-principal { padding: 24px 16px 48px; }
   .bandeja { overflow-x: auto; }
   .tabla-f { min-width: 760px; }
@@ -380,3 +380,13 @@ body:has(.sitio), body:has(.comercial) { margin: 0; background: var(--f-fondo); 
 @media (prefers-reduced-motion: reduce) {
   .sitio *, .comercial * { animation: none !important; transition: none !important; }
 }
+
+/* ---------- Secciones apartadas para el siguiente sprint (componente ProximoSprint) ---------- */
+.proximo { border: 1.5px dashed var(--f-borde-input); border-radius: var(--f-r-md); background: var(--f-fondo); padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; color: var(--f-texto-2); }
+.proximo__cabecera { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.proximo__cabecera strong { font-size: 14px; color: var(--f-texto); }
+.proximo__sprint { background: var(--f-accion-suave); color: var(--f-accion-hover); border: 1px solid #fed7aa; border-radius: 9999px; font-size: 11px; font-weight: 700; letter-spacing: .4px; padding: 2px 9px; text-transform: uppercase; }
+.proximo p { font-size: 13px; line-height: 1.45; margin: 0; }
+.proximo small { font-size: 11px; color: var(--f-tenue); }
+.bandeja__filtros .proximo { flex: 1; padding: 8px 12px; }
+.comercial-proximo { margin-bottom: 16px; }

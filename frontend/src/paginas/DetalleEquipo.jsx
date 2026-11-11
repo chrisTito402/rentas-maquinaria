@@ -7,6 +7,7 @@ import { useCarrito } from '../carrito/CarritoContext.jsx';
 import DesgloseCostos from '../componentes/DesgloseCostos.jsx';
 import CalendarioRango from '../componentes/CalendarioRango.jsx';
 import Maquina from '../componentes/Maquina.jsx';
+import ProximoSprint from '../componentes/ProximoSprint.jsx';
 import { imagenEquipo, partesCaracteristicas } from '../logica/imagenEquipo.js';
 import { MAX_CANTIDAD } from '@compartido/constantes.js';
 import { contarDias } from '@compartido/costos.js';
@@ -95,6 +96,9 @@ export default function DetalleEquipo() {
               ))}
             </div>
           </section>
+          <ProximoSprint hu="HU-01b" kan="KAN-52" titulo="Fotos reales y disponibilidad" duenio="Héctor">
+            Aquí irán las fotos reales del equipo y cuántas unidades hay disponibles para rentar.
+          </ProximoSprint>
         </div>
 
         <aside className="f-tarjeta ficha-panel" aria-label="Agregar a mi cotización">
@@ -111,6 +115,9 @@ export default function DetalleEquipo() {
             inicio={fechaInicio} fin={fechaFin}
             onCambio={(inicio, fin) => { setFechaInicio(inicio); setFechaFin(fin); setMensaje(''); }}
           />
+          <ProximoSprint hu="HU-02a" kan="KAN-9" titulo="Fechas ocupadas" duenio="Chris">
+            El calendario marcará los días en que este equipo ya está rentado y no dejará elegirlos.
+          </ProximoSprint>
 
           <div className="ficha-cantidad">
             <strong id="etiqueta-cantidad">Cantidad</strong>

@@ -7,6 +7,7 @@ import { api } from '../api.js';
 import FormularioCliente from '../componentes/FormularioCliente.jsx';
 import DesgloseCostos from '../componentes/DesgloseCostos.jsx';
 import IconoCheck from '../componentes/IconoCheck.jsx';
+import ProximoSprint from '../componentes/ProximoSprint.jsx';
 import { imagenEquipo, tieneIlustracion } from '../logica/imagenEquipo.js';
 import { validarCliente } from '@compartido/validarCliente.js';
 import { MAX_NOTAS } from '@compartido/constantes.js';
@@ -138,6 +139,9 @@ export default function MiCotizacion() {
             </div>
           ))}
           <Link className="agregar-otro" to="/">+ Agregar otro equipo</Link>
+          <ProximoSprint hu="HU-13b" kan="KAN-53" titulo="Costo de envío por zona" duenio="Chris">
+            Se sumará el flete según el municipio de entrega. Por ahora el total solo incluye la renta e IVA.
+          </ProximoSprint>
           <DesgloseCostos lineas={lineas} />
           <button type="submit" form="form-solicitud" className="f-btn f-btn--primario f-btn--grande" disabled={enviando}>
             {enviando ? 'Enviando…' : 'Enviar solicitud de cotización →'}

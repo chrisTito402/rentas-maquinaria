@@ -1,6 +1,7 @@
 // Menú lateral del panel comercial (frames «1 · Bandeja de solicitudes» y «2 · Detalle de solicitud» del Figma).
 // En el Sprint 1 el panel todavía no pide usuario: el acceso llega con HU-16.
 import { Link, NavLink, Outlet } from 'react-router-dom';
+import ProximoSprint from '../../componentes/ProximoSprint.jsx';
 
 export default function PanelLayout() {
   return (
@@ -13,6 +14,9 @@ export default function PanelLayout() {
         <nav aria-label="Secciones">
           <NavLink to="/comercial/cotizaciones">Cotizaciones</NavLink>
         </nav>
+        <ProximoSprint hu="HU-16" kan="KAN-17" titulo="Acceso con usuario">
+          El panel pedirá iniciar sesión para que solo entre el personal.
+        </ProximoSprint>
         <div className="comercial-menu__perfil">
           <strong>Área comercial</strong>
           <span>Administrador</span>

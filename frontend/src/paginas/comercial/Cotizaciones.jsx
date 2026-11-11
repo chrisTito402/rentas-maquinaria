@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../api.js';
 import { dinero } from '@compartido/formato.js';
+import ProximoSprint from '../../componentes/ProximoSprint.jsx';
 
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 const corta = (iso) => {
@@ -54,12 +55,19 @@ export default function Cotizaciones() {
         <span className="comercial-perfil"><i>AD</i>Administrador</span>
       </header>
 
+      <ProximoSprint hu="HU-05" kan="KAN-13" titulo="Nueva cotización desde el panel" duenio="Katia" className="comercial-proximo">
+        Un botón para capturar aquí las cotizaciones que piden los clientes por teléfono.
+      </ProximoSprint>
+
       <section className="f-tarjeta bandeja">
         <div className="bandeja__filtros">
           <div className="f-campo">
             <label htmlFor="buscar" className="sr-only">Buscar por cliente o folio</label>
             <input id="buscar" type="search" placeholder="Buscar por cliente o folio" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
           </div>
+          <ProximoSprint hu="HU-16" kan="KAN-17" titulo="Filtros por estado y origen">
+            Pendiente, Aprobada o Rechazada; Web o Teléfono.
+          </ProximoSprint>
         </div>
 
         {error ? (
