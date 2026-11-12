@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node --watch src/servidor.js",
     "start": "node src/servidor.js",
+    "test": "node --test ../tests/render.test.mjs",
     "db:crear": "node scripts/crear-db.js",
     "db:operacion": "node scripts/preparar-operacion.js"
   },
