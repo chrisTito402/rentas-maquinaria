@@ -42,6 +42,48 @@ cotizaciones aprobadas.
 
 ## Arrancar el proyecto
 
+### Publicar en Render
+
+Usa un Web Service con Node, la rama que contenga estos cambios, región Oregon
+y Root Directory vacío. La base PostgreSQL debe estar en la misma región.
+
+Build Command:
+
+```sh
+npm ci --prefix backend && npm ci --prefix frontend --include=dev && npm run build --prefix frontend
+```
+
+Start Command:
+
+```sh
+npm start --prefix backend
+```
+
+Agrega `NODE_ENV=production` y `DATABASE_URL` con la Internal Database URL de
+Render. No guardes esa dirección en GitHub. No necesitas configurar `PORT`.
+En Health Check Path puedes usar `/api/salud`.
+
+Al arrancar, el servidor prepara las tablas que falten. Carga los ejemplos
+solamente si la base comercial es nueva y conserva los datos al reiniciar.
+No uses `db:crear` en Render porque ese comando borra y recrea las tablas.
+La página y la API se abren desde el mismo enlace, incluso al recargar una
+pantalla interna del panel.
+
+Pruebas locales, después de instalar las dependencias:
+
+```sh
+npm run build --prefix frontend
+npm test --prefix backend
+npm test --prefix frontend
+```
+
+Las pruebas de arranque simulan la conexión. Después de publicar hay que abrir
+`/api/salud` y comprobar con PostgreSQL real el guardado de una renta y su foto,
+también después de recargar. El plan gratuito de PostgreSQL en Render vence
+a los 30 días.
+
+### Preparar la base local
+
 Necesitas Node.js y PostgreSQL. En `backend/.env`, configura `DATABASE_URL`
 con la base que usa Comercial. Si es una instalación nueva, inicializa las
 tablas de Comercial con `npm run db:crear -- --sin-semilla` y carga su catálogo
