@@ -9,6 +9,7 @@ import consultas from './rutas/consultas.rutas.js';
 import operacion from './rutas/operacion.rutas.js';
 
 export const app = express();
+app.disable('x-powered-by');
 app.use('/api/operacion', express.json({ limit: '1200kb' }), operacion);
 app.use(express.json());
 

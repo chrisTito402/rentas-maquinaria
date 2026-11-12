@@ -56,6 +56,7 @@ test('La página abre en el inicio y al recargar una pantalla interna', async t 
   const origen = `http://127.0.0.1:${server.address().port}`;
   const portada = await fetch(origen, { headers: { Accept: 'text/html' } });
   assert.equal(portada.status, 200);
+  assert.equal(portada.headers.get('x-powered-by'), null);
   const html = await portada.text();
   assert.match(html, /id="root"/);
   for (const ruta of ['/gestion/operacion', '/gestion/rentas/R-001']) {
@@ -69,5 +70,6 @@ test('La página abre en el inicio y al recargar una pantalla interna', async t 
   assert.match(archivo.headers.get('content-type'), /javascript/);
   const api = await fetch(origen + '/api/no-existe', { headers: { Accept: 'text/html' } });
   assert.equal(api.status, 404);
+  assert.equal(api.headers.get('x-powered-by'), null);
   assert.deepEqual(await api.json(), { error: 'Ruta no encontrada' });
 });
