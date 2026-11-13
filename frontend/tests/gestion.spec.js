@@ -37,7 +37,7 @@ async function prepararAPI(page) {
 test('cotización a cierre, con avance manual, URL persistente y unidades independientes', async ({ page }) => {
   const mock = await prepararAPI(page);
   await page.goto('/gestion/cotizaciones');
-  await page.getByRole('link', { name: 'COT-0001', exact: true }).click();
+  await page.getByRole('link', { name: 'Revisar →', exact: true }).click();
   await page.getByRole('button', { name: 'Aprobar cotización' }).click();
   await expect(page.getByRole('heading', { name: 'Cotización aprobada' })).toBeVisible();
   await expect(page).toHaveURL(/cotizaciones\/1$/);
@@ -88,7 +88,8 @@ test('cotización a cierre, con avance manual, URL persistente y unidades indepe
   await page.getByRole('link', { name: 'Historial', exact: true }).click();
   await expect(page.getByRole('cell', { name: 'MC-01 · R-001' })).toBeVisible();
   await page.getByRole('link', { name: 'Cotizaciones', exact: true }).click();
-  await page.getByRole('link', { name: 'COT-0001', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Mostrar', exact: true }).selectOption('Aprobada');
+  await page.getByRole('link', { name: 'Ver seguimiento' }).click();
   await expect(page.getByRole('link', { name: 'MC-01 · Cerrada' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'MC-02 · Preparación' })).toBeVisible();
   expect(mock.errores).toEqual([]);
@@ -222,26 +223,5 @@ test('el calendario y los formularios se cierran con teclado o al pulsar fuera',
   await expect(dialog).toBeVisible();
   await page.getByRole('button', { name: 'Cerrar ventana', exact: true }).click({ position: { x: 3, y: 3 } });
   await expect(dialog).toHaveCount(0);
-  expect(mock.errores).toEqual([]);
-});
-
-
-test('accesos comerciales usan las nuevas pantallas dentro de Gestion', async ({ page }) => {
-  const mock = await prepararAPI(page);
-  await page.setViewportSize({ width: 390, height: 844 });
-  for (const ruta of ['/comercial', '/comercial/cotizaciones']) {
-    await page.goto(ruta);
-    await expect(page).toHaveURL(/gestion\/cotizaciones$/);
-    await expect(page.locator('.bandeja')).toBeVisible();
-    await page.getByLabel('Mostrar', { exact: true }).selectOption('Rechazada');
-    await expect(page.getByRole('link', { name: 'COT-0001', exact: true })).toHaveCount(0);
-    await page.getByLabel('Mostrar', { exact: true }).selectOption('Pendiente');
-    await expect(page.getByRole('link', { name: 'COT-0001', exact: true })).toBeVisible();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  }
-  await page.goto('/comercial/cotizaciones/1');
-  await expect(page).toHaveURL(/gestion\/cotizaciones\/1$/);
-  await expect(page.locator('.detalle')).toBeVisible();
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(mock.errores).toEqual([]);
 });

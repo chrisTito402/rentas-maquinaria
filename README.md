@@ -18,10 +18,6 @@ El enlace **Gestión** del encabezado abre un panel común para Comercial y
 Operaciones. El menú se conserva en Inicio, Cotizaciones, Operación,
 Inventario e Historial. Desde el encabezado puedes volver al Catálogo.
 
-Las pantallas del nuevo dise?o comercial se integran en `/gestion/cotizaciones`.
-Los accesos `/comercial` y `/comercial/cotizaciones/:id` redirigen a Gesti?n;
-se conserva un ?nico men? y el seguimiento de las unidades asignadas.
-
 En **Cotizaciones**, revisa las solicitudes pendientes y apruébalas.
 La confirmación ofrece continuar a **Operación → Por asignar**. Allí se
 guardan las unidades físicas; después eliges cuál preparar. No hay saltos
