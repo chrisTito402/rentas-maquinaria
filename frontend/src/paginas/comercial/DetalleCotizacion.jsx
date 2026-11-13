@@ -8,6 +8,8 @@ import BotonAprobar from '../../componentes/BotonAprobar.jsx';
 import IconoCheck from '../../componentes/IconoCheck.jsx';
 import { EstadoCotizacion } from './Cotizaciones.jsx';
 import ProximoSprint from '../../componentes/ProximoSprint.jsx';
+import { cargarOperacion } from '../../servicios/operacion.js';
+import { etapaRenta } from '../../logica/flujo.js';
 import { dinero } from '@compartido/formato.js';
 
 const corta = (iso) => new Date(`${String(iso).slice(0, 10)}T12:00:00`).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -18,6 +20,9 @@ export default function DetalleCotizacion() {
   const [cot, setCot] = useState(null);
   const [error, setError] = useState('');
   const [aprobadaAhora, setAprobadaAhora] = useState(false);
+  const [seguimiento, setSeguimiento] = useState(null);
+  const [falloSeguimiento, setFalloSeguimiento] = useState(false);
+  const [intento, setIntento] = useState(0);
 
   useEffect(() => {
     let vigente = true;
@@ -25,6 +30,15 @@ export default function DetalleCotizacion() {
     api.get(`/cotizaciones/${id}`).then((c) => { if (vigente) setCot(c); }).catch((e) => { if (vigente) setError(e.message); });
     return () => { vigente = false; };
   }, [id]);
+  // Ya aprobada: consulta en Operación si sus unidades ya se asignaron.
+  useEffect(() => {
+    let vigente = true;
+    setSeguimiento(null); setFalloSeguimiento(false);
+    if (cot?.estado === 'Aprobada') cargarOperacion()
+      .then((data) => { if (vigente) setSeguimiento(data.rentals.filter((r) => String(r.cotizacionId) === id)); })
+      .catch(() => { if (vigente) setFalloSeguimiento(true); });
+    return () => { vigente = false; };
+  }, [cot?.estado, id, intento]);
 
   if (error) return (
     <div className="f-tarjeta confirmacion">
@@ -43,8 +57,10 @@ export default function DetalleCotizacion() {
         <h1>Cotización aprobada</h1>
         <p>La cotización {cot.folio} quedó aprobada y su estado ya se actualizó en la lista.</p>
         <p className="f-alerta f-alerta--exito">Contacta al cliente por WhatsApp al {c.telefono} para darle seguimiento.</p>
+        <p>El siguiente paso es elegir las unidades físicas en Operación; todavía no se ha entregado ningún equipo.</p>
         <div className="confirmacion__acciones">
-          <Link className="f-btn f-btn--primario" to="/comercial/cotizaciones">Volver a cotizaciones</Link>
+          <Link className="f-btn f-btn--primario" to={`/comercial/operacion/por-asignar?cotizacion=${cot.id}`}>Continuar a asignación →</Link>
+          <Link className="f-btn f-btn--secundario" to="/comercial/cotizaciones">Volver a cotizaciones</Link>
         </div>
       </section>
       <span className="lista-preview__titulo">Así queda en la lista</span>
@@ -65,6 +81,29 @@ export default function DetalleCotizacion() {
           <p>Recibida el {recibida(cot.creadaEn)} desde {cot.origen === 'Web' ? 'el formulario web' : 'el panel'}</p>
         </div>
       </header>
+
+      {cot.estado === 'Aprobada' && (
+        <section className="f-tarjeta detalle-bloque seguimiento" role="status" aria-labelledby="titulo-seguimiento">
+          <h2 className="detalle-bloque__titulo" id="titulo-seguimiento">Seguimiento en Operación</h2>
+          {falloSeguimiento ? (
+            <><p>No se pudo consultar la asignación de unidades.</p><button className="f-btn f-btn--secundario" type="button" onClick={() => setIntento((n) => n + 1)}>Volver a intentar</button></>
+          ) : seguimiento === null ? (
+            <p className="f-cargando">Consultando el siguiente paso…</p>
+          ) : seguimiento.length ? (
+            <>
+              <p>Las unidades ya están asignadas. Cada una avanza a su propio ritmo; abre su detalle para continuar.</p>
+              <div className="seguimiento__unidades">
+                {seguimiento.map((r) => <Link className="f-btn f-btn--secundario" key={r.id} to={`/comercial/rentas/${r.id}`}>{r.unit} · {etapaRenta(r).titulo} →</Link>)}
+              </div>
+            </>
+          ) : (
+            <>
+              <p>La revisión comercial terminó. El siguiente paso es elegir las unidades físicas; todavía no se ha entregado ningún equipo.</p>
+              <Link className="f-btn f-btn--primario" to={`/comercial/operacion/por-asignar?cotizacion=${cot.id}`}>Continuar a asignación →</Link>
+            </>
+          )}
+        </section>
+      )}
 
       <div className="detalle">
         <div className="detalle__columna">

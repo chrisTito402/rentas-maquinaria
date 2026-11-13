@@ -353,7 +353,7 @@ body:has(.sitio), body:has(.comercial) { margin: 0; background: var(--f-fondo); 
   .comercial-menu nav { flex-direction: row; }
   .comercial-menu__perfil, .comercial-perfil, .comercial-menu .proximo { display: none; }
   .comercial-principal { padding: 24px 16px 48px; }
-  .bandeja { overflow-x: auto; }
+  .bandeja, .detalle-equipos { overflow-x: auto; }
   .tabla-f { min-width: 760px; }
 }
 @media (max-width: 600px) {
@@ -390,3 +390,14 @@ body:has(.sitio), body:has(.comercial) { margin: 0; background: var(--f-fondo); 
 .proximo small { font-size: 11px; color: var(--f-tenue); }
 .bandeja__filtros .proximo { flex: 1; padding: 8px 12px; }
 .comercial-proximo { margin-bottom: 16px; }
+
+/* ---------- Operación dentro del panel comercial ---------- */
+.comercial-operacion { background: transparent; }
+.seguimiento { margin-bottom: 20px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.seguimiento p { margin: 0; color: var(--f-texto-2); font-size: 14px; }
+.seguimiento__unidades { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 860px) {
+  .comercial-menu nav { flex-wrap: wrap; }
+  .comercial-menu nav a { padding: 8px 10px; font-size: 14px; }
+}
+.detalle__columna { min-width: 0; }
