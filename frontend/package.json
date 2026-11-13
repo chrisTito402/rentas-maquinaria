@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "test": "node --test ../tests/flujo.test.mjs ../tests/validarCliente.test.mjs",
+    "test": "node --import ../tests/alias.mjs --test ../tests/flujo.test.mjs ../tests/validarCliente.test.mjs ../tests/costos.test.mjs ../tests/agregarLinea.test.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {
