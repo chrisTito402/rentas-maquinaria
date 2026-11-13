@@ -5,7 +5,8 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../../api.js';
 import BotonAprobar from '../../componentes/BotonAprobar.jsx';
-import IconoCheck from '../../componentes/IconoCheck.jsx';
+import { cargarOperacion } from '../../servicios/operacion.js';
+import { etapaRenta } from '../../logica/flujo.js';
 import { EstadoCotizacion } from './Cotizaciones.jsx';
 import ProximoSprint from '../../componentes/ProximoSprint.jsx';
 import { dinero } from '@compartido/formato.js';
@@ -18,6 +19,9 @@ export default function DetalleCotizacion() {
   const [cot, setCot] = useState(null);
   const [error, setError] = useState('');
   const [aprobadaAhora, setAprobadaAhora] = useState(false);
+  const [seguimiento, setSeguimiento] = useState(null);
+  const [falloSeguimiento, setFalloSeguimiento] = useState(false);
+  const [intento, setIntento] = useState(0);
 
   useEffect(() => {
     let vigente = true;
@@ -25,46 +29,43 @@ export default function DetalleCotizacion() {
     api.get(`/cotizaciones/${id}`).then((c) => { if (vigente) setCot(c); }).catch((e) => { if (vigente) setError(e.message); });
     return () => { vigente = false; };
   }, [id]);
+  useEffect(() => {
+    let vigente = true;
+    setSeguimiento(null); setFalloSeguimiento(false);
+    if (cot?.estado === 'Aprobada') cargarOperacion()
+      .then(data => { if (vigente) setSeguimiento(data.rentals.filter(r => String(r.cotizacionId) === id)); })
+      .catch(() => { if (vigente) setFalloSeguimiento(true); });
+    return () => { vigente = false; };
+  }, [cot?.estado, id, intento]);
 
   if (error) return (
     <div className="f-tarjeta confirmacion">
       <h1>No encontramos la cotización</h1>
       <p>{error}</p>
-      <Link className="f-btn f-btn--primario" to="/comercial/cotizaciones">Volver a cotizaciones</Link>
+      <Link className="f-btn f-btn--primario" to="/gestion/cotizaciones">Volver a cotizaciones</Link>
     </div>
   );
   if (!cot) return <p className="f-cargando" role="status">Cargando cotización…</p>;
   const c = cot.cliente;
 
-  if (aprobadaAhora) return (
-    <div className="detalle-aprobada">
-      <section className="f-tarjeta confirmacion" role="status">
-        <div className="confirmacion__icono"><IconoCheck /></div>
-        <h1>Cotización aprobada</h1>
-        <p>La cotización {cot.folio} quedó aprobada y su estado ya se actualizó en la lista.</p>
-        <p className="f-alerta f-alerta--exito">Contacta al cliente por WhatsApp al {c.telefono} para darle seguimiento.</p>
-        <div className="confirmacion__acciones">
-          <Link className="f-btn f-btn--primario" to="/comercial/cotizaciones">Volver a cotizaciones</Link>
-        </div>
-      </section>
-      <span className="lista-preview__titulo">Así queda en la lista</span>
-      <div className="f-tarjeta lista-preview">
-        <strong>{cot.folio}</strong>
-        <strong>{c.empresa || c.nombre}</strong>
-        <EstadoCotizacion valor={cot.estado} />
-      </div>
-    </div>
-  );
 
   return (
     <>
-      <Link className="f-volver" to="/comercial/cotizaciones">← Volver a cotizaciones</Link>
+      <Link className="f-volver" to="/gestion/cotizaciones">← Volver a cotizaciones</Link>
       <header className="comercial-encabezado" style={{ marginTop: 12 }}>
         <div>
           <h1>Cotización {cot.folio} <EstadoCotizacion valor={cot.estado} /></h1>
           <p>Recibida el {recibida(cot.creadaEn)} desde {cot.origen === 'Web' ? 'el formulario web' : 'el panel'}</p>
         </div>
       </header>
+
+      {cot.estado === 'Aprobada' && <section className="f-tarjeta detalle-bloque seguimiento-comercial" role="status">
+        <h2>{aprobadaAhora ? 'Cotización aprobada' : 'Seguimiento de la cotización'}</h2>
+        {falloSeguimiento ? <><p>No se pudo consultar la asignación de unidades.</p><button className="f-btn f-btn--secundario" onClick={() => setIntento(n => n + 1)}>Volver a intentar</button></> : seguimiento === null ? <p>Consultando el siguiente paso…</p> : seguimiento.length ? <>
+          <p>Las unidades ya están asignadas. Cada una avanza a su propio ritmo; abre su detalle para continuar.</p>
+          {seguimiento.map(r => <Link className="f-btn f-btn--secundario" key={r.id} to={'/gestion/rentas/' + r.id}>{r.unit} · {etapaRenta(r).titulo} →</Link>)}
+        </> : <><p>La revisión comercial terminó. El siguiente paso es elegir las unidades físicas; todavía no se ha entregado ningún equipo.</p><Link className="f-btn f-btn--primario" to={'/gestion/operacion/por-asignar?cotizacion=' + cot.id}>Continuar a asignación →</Link></>}
+      </section>}
 
       <div className="detalle">
         <div className="detalle__columna">

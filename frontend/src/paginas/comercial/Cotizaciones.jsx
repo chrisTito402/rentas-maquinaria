@@ -30,6 +30,7 @@ export function EstadoCotizacion({ valor }) {
 export default function Cotizaciones() {
   const navegar = useNavigate();
   const [busqueda, setBusqueda] = useState('');
+  const [estado, setEstado] = useState('');
   const [lista, setLista] = useState(null);
   const [error, setError] = useState('');
   const [intento, setIntento] = useState(0);
@@ -44,6 +45,8 @@ export default function Cotizaciones() {
     }, 300);
     return () => { vigente = false; clearTimeout(espera); };
   }, [busqueda, intento]);
+
+  const visibles = (lista ?? []).filter(c => !estado || c.estado === estado);
 
   return (
     <>
@@ -65,9 +68,15 @@ export default function Cotizaciones() {
             <label htmlFor="buscar" className="sr-only">Buscar por cliente o folio</label>
             <input id="buscar" type="search" placeholder="Buscar por cliente o folio" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
           </div>
-          <ProximoSprint hu="HU-16" kan="KAN-17" titulo="Filtros por estado y origen">
-            Pendiente, Aprobada o Rechazada; Web o Teléfono.
-          </ProximoSprint>
+          <div className="f-campo">
+            <label htmlFor="estado-cotizacion">Mostrar</label>
+            <select id="estado-cotizacion" value={estado} onChange={e => setEstado(e.target.value)}>
+              <option value="">Todas</option>
+              <option value="Pendiente">Pendientes de revisión</option>
+              <option value="Aprobada">Aprobadas</option>
+              <option value="Rechazada">Rechazadas</option>
+            </select>
+          </div>
         </div>
 
         {error ? (
@@ -77,18 +86,18 @@ export default function Cotizaciones() {
           </div>
         ) : lista === null ? (
           <p className="f-cargando" role="status">Buscando cotizaciones…</p>
-        ) : lista.length === 0 ? (
-          <div className="bandeja__vacio"><p>{busqueda ? 'No hay cotizaciones con esa búsqueda.' : 'Todavía no hay cotizaciones.'}</p></div>
+        ) : visibles.length === 0 ? (
+          <div className="bandeja__vacio"><p>{busqueda || estado ? 'No hay cotizaciones con esa búsqueda.' : 'Todavía no hay cotizaciones.'}</p></div>
         ) : (
           <table className="tabla-f">
             <thead>
               <tr><th>Folio</th><th>Cliente</th><th>Equipos</th><th>Fechas de renta</th><th>Total</th><th>Estado</th><th><span className="sr-only">Abrir</span></th></tr>
             </thead>
             <tbody>
-              {lista.map((c) => (
-                <tr key={c.id} onClick={() => navegar(`/comercial/cotizaciones/${c.id}`)}>
+              {visibles.map((c) => (
+                <tr key={c.id} onClick={() => navegar(`/gestion/cotizaciones/${c.id}`)}>
                   <td className="tabla-f__folio">
-                    <Link to={`/comercial/cotizaciones/${c.id}`} onClick={(e) => e.stopPropagation()}>{c.folio}</Link>
+                    <Link to={`/gestion/cotizaciones/${c.id}`} onClick={(e) => e.stopPropagation()}>{c.folio}</Link>
                     <small>{c.origen} · {haceCuanto(c.creadaEn)}</small>
                   </td>
                   <td>
@@ -108,7 +117,7 @@ export default function Cotizaciones() {
             </tbody>
           </table>
         )}
-        {lista?.length > 0 && <p className="bandeja__pie">{lista.length} {lista.length === 1 ? 'cotización' : 'cotizaciones'} · de la más reciente a la más antigua</p>}
+        {visibles.length > 0 && <p className="bandeja__pie">{visibles.length} {visibles.length === 1 ? 'cotización' : 'cotizaciones'} · de la más reciente a la más antigua</p>}
       </section>
     </>
   );

@@ -4,10 +4,7 @@ import Layout from './componentes/Layout.jsx';
 import Catalogo from './paginas/Catalogo.jsx';
 import DetalleEquipo from './paginas/DetalleEquipo.jsx';
 import MiCotizacion from './paginas/MiCotizacion.jsx';
-import PanelCotizaciones from './paginas/PanelCotizaciones.jsx';
-import DetalleCotizacion from './paginas/DetalleCotizacion.jsx';
 import Operacion from './paginas/operacion/FlujoOperacion.jsx';
-import PanelLayout from './paginas/comercial/PanelLayout.jsx';
 import CotizacionesComercial from './paginas/comercial/Cotizaciones.jsx';
 import DetalleCotizacionComercial from './paginas/comercial/DetalleCotizacion.jsx';
 
@@ -24,8 +21,8 @@ export default function App() {
       <Route path="/gestion" element={<GestionLayout />}>
         <Route index element={<Navigate to="inicio" replace />} />
         <Route path="inicio" element={<Operacion vista="inicio" />} />
-        <Route path="cotizaciones" element={<PanelCotizaciones />} />
-        <Route path="cotizaciones/:id" element={<DetalleCotizacion />} />
+        <Route path="cotizaciones" element={<CotizacionesComercial />} />
+        <Route path="cotizaciones/:id" element={<DetalleCotizacionComercial />} />
         <Route path="operacion" element={<Navigate to="por-asignar" replace />} />
         <Route path="operacion/:seccion" element={<Operacion />} />
         <Route path="rentas/:rentaId" element={<Operacion vista="detalle" />} />
@@ -33,11 +30,8 @@ export default function App() {
         <Route path="historial" element={<Operacion vista="historial" />} />
         <Route path="*" element={<><h1>Página no encontrada</h1><Navigate to="/gestion/inicio" replace /></>} />
       </Route>
-      <Route path="/comercial" element={<PanelLayout />}>
-        <Route index element={<Navigate to="cotizaciones" replace />} />
-        <Route path="cotizaciones" element={<CotizacionesComercial />} />
-        <Route path="cotizaciones/:id" element={<DetalleCotizacionComercial />} />
-      </Route>
+      <Route path="/comercial" element={<Navigate to="/gestion/cotizaciones" replace />} />
+      <Route path="/comercial/cotizaciones/:id?" element={<RutaAnterior comercial />} />
       <Route path="/admin/:seccion?" element={<RutaAnterior />} />
       <Route path="/panel/cotizaciones/:id?" element={<RutaAnterior comercial />} />
       <Route element={<Layout />}>

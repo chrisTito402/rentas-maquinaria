@@ -53,7 +53,7 @@ export default function GestionLayout() {
           <div><strong>Gestión</strong><small>Comercial y Operaciones, en un mismo lugar</small></div>
           <Link className="catalog-return" to="/">Ver catálogo ↗</Link>
         </header>
-        <main id="contenido-gestion" className="main-content" tabIndex={-1}><Outlet /></main>
+        <main id="contenido-gestion" className={'main-content' + (pathname.startsWith('/gestion/cotizaciones') ? ' comercial comercial-integrada' : '')} tabIndex={-1}><Outlet /></main>
         <footer className="workspace-footer">Renta de maquinaria · Gestión</footer>
       </div>
     </div>
