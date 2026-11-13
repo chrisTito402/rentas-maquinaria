@@ -50,7 +50,7 @@ export default function Cotizaciones() {
       <header className="comercial-encabezado">
         <div>
           <h1>Cotizaciones</h1>
-          <p>Solicitudes recibidas desde la página web.</p>
+          <p>Consulta y da seguimiento a las cotizaciones.</p>
         </div>
         <span className="comercial-perfil"><i>AD</i>Administrador</span>
       </header>
