@@ -24,12 +24,12 @@ export default function ReservacionesComerciales({ reservaciones, onAssign, unit
 
   return (
     <section aria-label="Cotizaciones por asignar">
-      {!reservaciones.length && <div className="panel empty"><h2>No hay cotizaciones por asignar en esta vista</h2><p>Las solicitudes aparecerán aquí después de aprobarlas en Cotizaciones.</p><Link to="/gestion/cotizaciones">Ir a Cotizaciones →</Link></div>}
+      {!reservaciones.length && <div className="panel empty"><h2>No hay cotizaciones por asignar en esta vista</h2><p>Las solicitudes aparecerán aquí después de aprobarlas en Cotizaciones.</p><Link to="/comercial/cotizaciones">Ir a Cotizaciones →</Link></div>}
       {reservaciones.map(cotizacion => (
         <details key={cotizacion.id} className="assignment-card" open={String(cotizacion.id) === foco ? true : undefined}>
           <summary><strong>{cotizacion.folio} · {cotizacion.cliente.nombre}</strong> · Pendiente de asignación</summary>
           <p>{cotizacion.cliente.telefono} · {cotizacion.cliente.direccion}</p>
-          <Link to={'/gestion/cotizaciones/' + cotizacion.id}>Revisar cotización completa</Link>
+          <Link to={'/comercial/cotizaciones/' + cotizacion.id}>Revisar cotización completa</Link>
           <form onSubmit={event => asignar(event, cotizacion)}>
             <p>2. Elige una unidad física por equipo. Puedes seleccionar un identificador disponible o escribir uno nuevo para registrarlo. Guardar no inicia la preparación ni confirma la entrega.</p>
             <fieldset disabled={enCurso !== null} className="assignment-fields">

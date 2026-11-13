@@ -14,9 +14,9 @@ El panel de Operaciones cubre HU-01 (equipos), HU-02 (apartados), HU-03
 HU-09 (estado final) y HU-10 (carta responsiva). El flujo de Comercial permite
 crear y aprobar las cotizaciones que recibe Operaciones.
 
-El enlace **Gestión** del encabezado abre un panel común para Comercial y
-Operaciones. El menú se conserva en Inicio, Cotizaciones, Operación,
-Inventario e Historial. Desde el encabezado puedes volver al Catálogo.
+El enlace **Acceso para personal comercial** del pie del catálogo abre el
+panel comercial (`/comercial`), común para Comercial y Operaciones. Su menú
+reúne Inicio, Cotizaciones, Operación, Inventario e Historial, y enlaza al catálogo público.
 
 En **Cotizaciones**, revisa las solicitudes pendientes y apruébalas.
 La confirmación ofrece continuar a **Operación → Por asignar**. Allí se
@@ -32,8 +32,8 @@ cerradas se consultan en **Historial**.
 
 Las confirmaciones de guardado permanecen hasta cerrarlas o cambiar de
 página. Una devolución no puede tener fecha anterior a su entrega.
-Los enlaces anteriores `/admin/...` y `/panel/cotizaciones/...` redirigen
-al panel unificado.
+Los enlaces anteriores `/gestion/...`, `/admin/...` y `/panel/cotizaciones/...` redirigen
+al panel comercial.
 
 En **Inventario** aparecen los modelos de Comercial. Registra los identificadores
 de las unidades físicas que tienen en inventario. La vista **Disponibles**
@@ -111,10 +111,10 @@ de Comercial y los apartados registrados con ellas.
 
 ## Prueba del recorrido
 
-1. En [Cotizaciones](http://localhost:5173/gestion/cotizaciones),
+1. En [Cotizaciones](http://localhost:5173/comercial/cotizaciones),
    abre una cotización pendiente y apruébala.
 2. Usa **Continuar a asignación** para encontrar el mismo folio en
-   [Por asignar](http://localhost:5173/gestion/operacion/por-asignar).
+   [Por asignar](http://localhost:5173/comercial/operacion/por-asignar).
 3. Indica el identificador de cada unidad física. Si ya existe, debe estar
    disponible y corresponder al equipo cotizado. Si es nueva, se registra con
    el modelo de la cotización.

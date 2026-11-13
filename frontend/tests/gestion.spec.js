@@ -36,8 +36,8 @@ async function prepararAPI(page) {
 
 test('cotización a cierre, con avance manual, URL persistente y unidades independientes', async ({ page }) => {
   const mock = await prepararAPI(page);
-  await page.goto('/gestion/cotizaciones');
-  await page.getByRole('link', { name: 'Revisar →', exact: true }).click();
+  await page.goto('/comercial/cotizaciones');
+  await page.getByRole('link', { name: 'COT-0001', exact: true }).click();
   await page.getByRole('button', { name: 'Aprobar cotización' }).click();
   await expect(page.getByRole('heading', { name: 'Cotización aprobada' })).toBeVisible();
   await expect(page).toHaveURL(/cotizaciones\/1$/);
@@ -88,8 +88,8 @@ test('cotización a cierre, con avance manual, URL persistente y unidades indepe
   await page.getByRole('link', { name: 'Historial', exact: true }).click();
   await expect(page.getByRole('cell', { name: 'MC-01 · R-001' })).toBeVisible();
   await page.getByRole('link', { name: 'Cotizaciones', exact: true }).click();
-  await page.getByRole('combobox', { name: 'Mostrar', exact: true }).selectOption('Aprobada');
-  await page.getByRole('link', { name: 'Ver seguimiento' }).click();
+  await page.getByRole('link', { name: 'COT-0001', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Seguimiento en Operación' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'MC-01 · Cerrada' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'MC-02 · Preparación' })).toBeVisible();
   expect(mock.errores).toEqual([]);
@@ -98,7 +98,7 @@ test('cotización a cierre, con avance manual, URL persistente y unidades indepe
 test('guarda una foto de la responsiva y la vuelve a abrir después de recargar', async ({ page }) => {
   const mock = await prepararAPI(page);
   mock.iniciarAsignada();
-  await page.goto('/gestion/rentas/R-001');
+  await page.goto('/comercial/rentas/R-001');
   await page.getByRole('button', { name: 'Documentos', exact: true }).click();
   await page.getByRole('button', { name: 'Subir fotografía' }).click();
   const dialog = page.getByRole('dialog', { name: 'Foto de la responsiva' });
@@ -130,7 +130,7 @@ test('preparación detenida permite retomar la revisión sin entregar el equipo'
   const mock = await prepararAPI(page);
   mock.iniciarAsignada();
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/gestion/rentas/R-001');
+  await page.goto('/comercial/rentas/R-001');
   await page.getByRole('button', { name: 'Registrar preparación' }).click();
   await page.getByLabel('Mecánico que revisó').fill('Luis');
   await page.getByRole('combobox').selectOption('maintenance');
@@ -149,34 +149,34 @@ test('preparación detenida permite retomar la revisión sin entregar el equipo'
   expect(mock.errores).toEqual([]);
 });
 
-test('menú estable en móvil, accesos anteriores y sin desbordamiento de pantalla', async ({ page }) => {
+test('menú del panel comercial en móvil, accesos anteriores y sin desbordamiento de pantalla', async ({ page }) => {
   const mock = await prepararAPI(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/admin/equipos');
-  await expect(page).toHaveURL(/gestion\/inventario$/);
+  await expect(page).toHaveURL(/comercial\/inventario$/);
   await expect(page.getByRole('heading', { name: 'Inventario', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Abrir menú de gestión' }).click();
   await expect(page.getByRole('link', { name: 'Cotizaciones', exact: true })).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(page.getByRole('button', { name: 'Abrir menú de gestión' })).toBeFocused();
-  await page.getByRole('button', { name: 'Abrir menú de gestión' }).click();
   await page.getByRole('link', { name: 'Operación', exact: true }).click();
-  await expect(page).toHaveURL(/gestion\/operacion\/por-asignar$/);
+  await expect(page).toHaveURL(/comercial\/operacion\/por-asignar$/);
+  await expect(page.getByRole('link', { name: 'Operación', exact: true })).toHaveAttribute('aria-current', 'page');
   await page.goto('/panel/cotizaciones/1');
-  await expect(page).toHaveURL(/gestion\/cotizaciones\/1$/);
+  await expect(page).toHaveURL(/comercial\/cotizaciones\/1$/);
   await expect(page.getByRole('heading', { name: /COT-0001/ })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.goto('/gestion/operacion/rentas?x=1');
+  await expect(page).toHaveURL(/comercial\/operacion\/rentas\?x=1$/);
   await page.goto('/gestion/inicio');
+  await expect(page).toHaveURL(/comercial\/inicio$/);
   await expect(page.getByRole('heading', { name: 'Una renta, paso a paso' })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: 'test-results/gestion-mobile.png', fullPage: true });
   expect(mock.errores).toEqual([]);
 });
 
-test('error de carga y recuperación sin perder el menú de gestión', async ({ page }) => {
+test('error de carga y recuperación sin perder el menú del panel', async ({ page }) => {
   let fallo = true;
   await page.route('**/api/operacion', route => route.fulfill({ status: fallo ? 500 : 200, json: fallo ? { error: 'Sin conexión' } : { units: [], rentals: [], reservaciones: [], catalogo: [] } }));
-  await page.goto('/gestion/inicio');
+  await page.goto('/comercial/inicio');
   await expect(page.getByRole('alert')).toContainText('No se pudo actualizar');
   await expect(page.getByRole('link', { name: 'Cotizaciones', exact: true })).toBeVisible();
   fallo = false;
@@ -188,7 +188,7 @@ test('error de carga y recuperación sin perder el menú de gestión', async ({ 
 test('el calendario y los formularios se cierran con teclado o al pulsar fuera', async ({ page }) => {
   const mock = await prepararAPI(page);
   mock.iniciarAsignada();
-  await page.goto('/gestion/rentas/R-001');
+  await page.goto('/comercial/rentas/R-001');
   const prepare = page.getByRole('button', { name: 'Registrar preparación', exact: true });
   await prepare.click();
   await page.getByLabel('Mecánico que revisó').fill('Luis');
