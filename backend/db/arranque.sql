@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS equipos (
   modelo           VARCHAR(80)   NOT NULL,
   caracteristicas  TEXT          NOT NULL,
   tarifa_dia       NUMERIC(10,2) NOT NULL,
-  foto             VARCHAR(300)  NOT NULL
+  foto             VARCHAR(300)  NOT NULL,
+  disponible       BOOLEAN       NOT NULL DEFAULT TRUE   -- HU-01b
 );
 
 CREATE TABLE IF NOT EXISTS clientes (
@@ -27,6 +28,7 @@ CREATE TABLE IF NOT EXISTS cotizaciones (
   estado      VARCHAR(20)   NOT NULL DEFAULT 'Pendiente',
   notas       VARCHAR(500),
   subtotal    NUMERIC(12,2) NOT NULL,
+  envio       NUMERIC(12,2) NOT NULL DEFAULT 0,   -- HU-13b
   iva         NUMERIC(12,2) NOT NULL,
   total       NUMERIC(12,2) NOT NULL,
   creada_en   TIMESTAMP     NOT NULL DEFAULT NOW()
@@ -57,3 +59,6 @@ CREATE TABLE IF NOT EXISTS operacion_rentas (
   estado TEXT GENERATED ALWAYS AS (datos ->> 'status') STORED NOT NULL
 );
 
+-- Sprint 2: columnas nuevas para bases que ya existen (no borra datos).
+ALTER TABLE equipos      ADD COLUMN IF NOT EXISTS disponible BOOLEAN       NOT NULL DEFAULT TRUE;   -- HU-01b
+ALTER TABLE cotizaciones ADD COLUMN IF NOT EXISTS envio      NUMERIC(12,2) NOT NULL DEFAULT 0;      -- HU-13b

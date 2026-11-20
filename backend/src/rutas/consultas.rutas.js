@@ -32,7 +32,7 @@ r.get('/:id', async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) throw errorHttp(400, 'Id de cotización inválido');
   const { rows } = await query(
-    `SELECT c.id, c.folio, c.origen, c.estado, c.notas, c.subtotal, c.iva, c.total, c.creada_en AS "creadaEn",
+    `SELECT c.id, c.folio, c.origen, c.estado, c.notas, c.subtotal, c.envio, c.iva, c.total, c.creada_en AS "creadaEn",
             json_build_object('nombre', cl.nombre, 'telefono', cl.telefono, 'correo', cl.correo,
                               'empresa', cl.empresa, 'municipio', cl.municipio, 'direccion', cl.direccion) AS cliente
        FROM cotizaciones c

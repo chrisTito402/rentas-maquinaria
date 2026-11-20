@@ -15,13 +15,17 @@ INSERT INTO clientes (nombre, telefono, correo, empresa, municipio, direccion) V
 ('María López Ruiz', '6429876543', 'maria.lopez@correo.com', NULL, 'Navojoa', 'Av. Obregón 45, Col. Juárez'),
 ('Jorge Ramírez Soto', '6471112233', 'jorge@agricolamayo.mx', 'Agrícola del Mayo', 'Huatabampo', 'Carretera a Yavaros km 3, Col. Ejidal');
 
-INSERT INTO cotizaciones (folio, cliente_id, origen, estado, notas, subtotal, iva, total, creada_en) VALUES
-('COT-0001', 1, 'Web', 'Pendiente', 'Entregar antes de las 8 a. m.', 7200, 1152, 8352, NOW() - INTERVAL '2 days'),
-('COT-0002', 2, 'Web', 'Aprobada', NULL, 48500, 7760, 56260, NOW() - INTERVAL '1 day'),
-('COT-0003', 3, 'Web', 'Pendiente', NULL, 8700, 1392, 10092, NOW() - INTERVAL '3 hours');
+-- HU-13b: envío por unidad según la zona (Cajeme z1 $500, Navojoa z2 $1,200, Huatabampo z3 $2,000)
+-- e IVA 16 % sobre renta + envío.
+INSERT INTO cotizaciones (folio, cliente_id, origen, estado, notas, subtotal, envio, iva, total, creada_en) VALUES
+('COT-0001', 1, 'Web', 'Pendiente', 'Entregar antes de las 8 a. m.', 7200, 1000, 1312, 9512, NOW() - INTERVAL '2 days'),
+('COT-0002', 2, 'Web', 'Aprobada', NULL, 48500, 2400, 8144, 59044, NOW() - INTERVAL '1 day'),
+('COT-0003', 3, 'Web', 'Pendiente', NULL, 8700, 6000, 2352, 17052, NOW() - INTERVAL '3 hours');
 
+-- Fechas relativas al día en que se crea la base, para que la demo siempre tenga fechas futuras.
+-- COT-0002 está Aprobada: la excavadora (2) y el minicargador (5) se ven ocupados en el calendario (HU-02a).
 INSERT INTO cotizacion_equipos (cotizacion_id, equipo_id, cantidad, fecha_inicio, fecha_fin, dias, tarifa_dia, importe) VALUES
-(1, 1, 2, '2026-11-10', '2026-11-12', 3, 1200, 7200),
-(2, 2, 1, '2026-11-16', '2026-11-20', 5, 6800, 34000),
-(2, 5, 1, '2026-11-16', '2026-11-20', 5, 2900, 14500),
-(3, 4, 3, '2026-11-12', '2026-11-13', 2, 1450, 8700);
+(1, 1, 2, CURRENT_DATE + 3, CURRENT_DATE + 5, 3, 1200, 7200),
+(2, 2, 1, CURRENT_DATE + 7, CURRENT_DATE + 11, 5, 6800, 34000),
+(2, 5, 1, CURRENT_DATE + 7, CURRENT_DATE + 11, 5, 2900, 14500),
+(3, 4, 3, CURRENT_DATE + 4, CURRENT_DATE + 5, 2, 1450, 8700);

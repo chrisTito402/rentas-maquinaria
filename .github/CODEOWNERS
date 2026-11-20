@@ -22,3 +22,18 @@
 /backend/src/rutas/consultas.rutas.js          @katianavarez
 /frontend/src/paginas/PanelCotizaciones.jsx    @katianavarez
 /frontend/src/paginas/DetalleCotizacion.jsx    @katianavarez
+/frontend/src/paginas/comercial/Cotizaciones.jsx      @katianavarez
+/frontend/src/paginas/comercial/DetalleCotizacion.jsx @katianavarez
+
+# ---- Sprint 2 ----
+# Chris · HU-13b, HU-02a (compartido/costos.js ya es suyo)
+/backend/src/rutas/ocupadas.rutas.js           @chrisTito402
+/compartido/ocupadas.js                        @chrisTito402
+/frontend/src/componentes/CalendarioRango.jsx  @chrisTito402
+
+# Katia · HU-05, HU-16
+/backend/src/rutas/panel.rutas.js              @katianavarez
+/frontend/src/paginas/comercial/NuevaCotizacion.jsx @katianavarez
+
+# Héctor · HU-01b, HU-07
+/backend/src/rutas/pdf.rutas.js                @USUARIO_HECTOR
