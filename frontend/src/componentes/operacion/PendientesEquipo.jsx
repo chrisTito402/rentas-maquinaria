@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 const ficha = id => '/comercial/inventario/' + encodeURIComponent(id);
 const detalle = id => '/comercial/rentas/' + encodeURIComponent(id);
 
-export default function PendientesEquipo({ data }) {
-  const hoy = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Hermosillo' });
+export default function PendientesEquipo({ data, hoy }) {
   const limite = new Date(hoy + 'T12:00:00Z');
   limite.setUTCDate(limite.getUTCDate() + 7);
   const fin = limite.toISOString().slice(0, 10);
