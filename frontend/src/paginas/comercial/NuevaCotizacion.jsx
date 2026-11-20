@@ -181,7 +181,11 @@ export default function NuevaCotizacion() {
             {guardando ? 'Guardando…' : 'Guardar cotización'}
           </button>
           <Link className="f-btn f-btn--secundario f-btn--grande" to="/comercial/cotizaciones">Cancelar</Link>
-          <p className="nueva-lado__nota">Se guarda con un folio nuevo y estado Pendiente.</p>
+          {/* Ajuste A2 */}
+          <p className="nueva-lado__nota">
+            Se guarda con un folio nuevo y estado Pendiente. No compromete al cliente ni a la empresa
+            ni aparta equipos hasta que se apruebe.
+          </p>
         </aside>
       </div>
     </>

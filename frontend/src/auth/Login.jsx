@@ -37,7 +37,8 @@ export default function Login() {
           {error && <p className="acceso-error" role="alert">{error}</p>}
           <button className="acceso-submit" type="submit" disabled={guardando || sesion.cargando}>{guardando ? 'Iniciando sesión…' : 'Iniciar sesión'}</button>
         </form>
-        <Link to="/" className="acceso-back">Volver al catálogo</Link>
+        {/* Ajuste A5: dejar claro a qué catálogo regresa */}
+        <Link to="/" className="acceso-back">← Ver catálogo de maquinaria en renta</Link>
       </section>
     </main>
     <footer className="acceso-footer">Renta de Maquinaria · Cd. Obregón, Sonora</footer>

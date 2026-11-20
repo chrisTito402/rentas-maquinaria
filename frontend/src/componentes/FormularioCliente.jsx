@@ -41,14 +41,16 @@ export default function FormularioCliente({ valores, errores = {}, onCambio }) {
           <input {...props('correo')} type="email" maxLength={100} placeholder="tu@correo.com" autoComplete="email" />
         </Campo>
       </div>
-      <Campo id="municipio" etiqueta="Municipio de entrega" error={errores.municipio}>
+      <Campo id="municipio" etiqueta="Municipio donde se entrega el equipo" error={errores.municipio}>
         <select {...props('municipio')}>
           <option value="">Elige un municipio…</option>
           {MUNICIPIOS.map((m) => <option key={m}>{m}</option>)}
         </select>
       </Campo>
-      <Campo id="direccion" etiqueta="Dirección de entrega" error={errores.direccion}>
-        <input {...props('direccion')} maxLength={200} placeholder="Calle, número y colonia" autoComplete="street-address" />
+      {/* Ajuste A3 (re-presentación del Sprint 1): dejar claro que es donde se deja la maquinaria */}
+      <Campo id="direccion" etiqueta="Dirección de entrega del equipo" error={errores.direccion}
+        ayuda="Es el lugar donde dejaremos la maquinaria (obra, predio o bodega), no la dirección de tu empresa. Agrega una referencia si es difícil de encontrar.">
+        <input {...props('direccion')} maxLength={200} placeholder="Ej. Calle Sufragio Efectivo 120, Col. Centro, junto a la plaza" autoComplete="street-address" />
       </Campo>
     </>
   );

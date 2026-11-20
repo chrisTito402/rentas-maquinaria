@@ -50,7 +50,7 @@ export default function DetalleEquipo() {
     <div className="f-tarjeta confirmacion">
       <h1>Equipo no disponible</h1>
       <p>{error}</p>
-      <Link className="f-btn f-btn--primario" to="/">Volver al catálogo</Link>
+      <Link className="f-btn f-btn--primario" to="/">Ver todo el catálogo de maquinaria</Link>
     </div>
   );
   if (!equipo) return <p className="f-cargando" role="status">Cargando equipo…</p>;
@@ -88,7 +88,7 @@ export default function DetalleEquipo() {
   return (
     <>
       <nav className="migas" aria-label="Ruta">
-        <Link className="f-volver" to="/">← Catálogo</Link>
+        <Link className="f-volver" to="/">← Volver al catálogo de maquinaria</Link>
         <span aria-hidden="true">/</span>
         <span>{equipo.tipo}</span>
         <span aria-hidden="true">/</span>
@@ -173,7 +173,7 @@ export default function DetalleEquipo() {
               <Link className="f-enlace" to="/mi-cotizacion">Ver mi cotización →</Link>
             </div>
           ) : (
-            <p className="ficha-nota-cobro">No se realiza ningún cobro en este paso.</p>
+            <p className="ficha-nota-cobro">No se realiza ningún cobro ni apartado en este paso.</p>
           )}
         </aside>
       </div>
