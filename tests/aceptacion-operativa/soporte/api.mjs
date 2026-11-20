@@ -6,7 +6,8 @@ export async function prepararAPI(page) {
   const cliente = { nombre: 'Constructora del Norte', telefono: '6621234567', correo: 'obra@example.com', direccion: 'Avenida principal 10', municipio: 'Hermosillo', empresa: 'Obras del Norte' };
   const linea = { id: 1, equipoId: 1, equipo: 'Montacargas', modelo: 'M1', tipo: 'Carga', cantidad: 2, inicio: '2026-11-09', fin: '2026-11-15', fechaInicio: '2026-11-09', fechaFin: '2026-11-15', dias: 7, tarifaDia: 100, importe: 1400 };
   let cot = { id: 1, folio: 'COT-0001', estado: 'Pendiente', origen: 'Web', cliente, creadaEn: '2026-11-09T12:00:00Z', lineas: [linea], subtotal: 1400, iva: 224, total: 1624 };
-  let data = { units: [], rentals: [], reservaciones: [], catalogo: [{ id: 1, nombre: 'Montacargas', modelo: 'M1', tipo: 'Carga' }] };
+  const unidades = ['MC-01', 'MC-02'].map(id => ({ id, catalogoId: 1, name: linea.equipo, state: 'Disponible' }));
+  let data = { units: unidades, rentals: [], reservaciones: [], catalogo: [{ id: 1, nombre: 'Montacargas', modelo: 'M1', tipo: 'Carga' }] };
   const errores = [];
   page.on('pageerror', e => errores.push(e.message));
   let falloAccion = false;

@@ -11,3 +11,31 @@
 .inicio-marca { color:#bd4c09; position:absolute; bottom:.4rem; right:.4rem }
 @media(max-width:1000px){.inicio-menu{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:620px){.inicio-menu{grid-template-columns:repeat(2,minmax(0,1fr))}.comercial .inicio-menu button{min-height:7rem}}
+
+.inicio-lista { background:white; border:1px solid var(--f-borde,#d7dee6); border-radius:12px; overflow:hidden; margin-bottom:1.5rem }
+.inicio-lista header,.inicio-lista footer { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; padding:1.25rem }
+.inicio-lista header h2,.inicio-lista header p { margin:0 }
+.inicio-lista header p { margin-top:.4rem }
+.inicio-lista select,.inicio-lista footer button { color:inherit; background:white; border:1px solid var(--f-borde,#d7dee6); border-radius:7px; padding:.45rem .7rem }
+.inicio-tabla { overflow-x:auto }
+.inicio-tabla table { width:100%; border-collapse:collapse }
+.inicio-tabla th,.inicio-tabla td { text-align:left; padding:1.2rem; border-top:1px solid var(--f-borde,#d7dee6) }
+.inicio-tabla th { background:#f8fafb; font-size:.8rem; text-transform:uppercase; letter-spacing:.05em }
+.inicio-tabla td:last-child { text-align:right }
+.inicio-tabla small { display:block; margin-top:.4rem; color:#596678 }
+.comercial .inicio-tabla .button { background:#b8490a; color:white; padding:.7rem 1rem; border-radius:8px; white-space:nowrap }
+.inicio-lista footer { border-top:1px solid var(--f-borde,#d7dee6) }
+.inicio-lista footer div { display:flex; gap:.75rem; align-items:center }
+.inicio-lista footer button:disabled { opacity:.5 }
+.inicio-vacio { padding:1rem 1.25rem }
+@media(max-width:620px){.inicio-tabla td,.inicio-tabla th{padding:.65rem}.inicio-lista footer{gap:.5rem}}
+@media(prefers-reduced-motion:no-preference){.operacion-desvanecer{animation:operacion-entrada .2s ease-out}}
+@keyframes operacion-entrada{from{opacity:.45}to{opacity:1}}
+
+@media(max-width:620px){
+  .inicio-tabla thead { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%) }
+  .inicio-tabla tr { display:grid; grid-template-columns:minmax(0,1fr) auto; padding:.9rem 1rem; gap:.35rem .75rem; border-top:1px solid var(--f-borde,#d7dee6) }
+  .inicio-tabla td { grid-column:1; border:0; padding:0; overflow-wrap:anywhere }
+  .inicio-tabla td:last-child { grid-column:2; grid-row:1/4; align-self:center }
+  .inicio-tabla td small { margin-top:.15rem }
+}

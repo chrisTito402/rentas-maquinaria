@@ -30,18 +30,48 @@ export async function cotizacionesAprobadas(db, id = null) {
 
 export const normalizarUnidad = valor => String(valor ?? '').trim().toUpperCase();
 
+function seleccionarDisponibles(lineas, unidades, disponible) {
+  const asignadas = new Map();
+  const opciones = lineas.map(linea => unidades.filter(unidad => disponible(unidad, linea)));
+  // Una unidad con varias fechas posibles puede ceder su lugar a otra.
+  function encontrar(indice, visitadas) {
+    for (const unidad of opciones[indice]) {
+      if (visitadas.has(unidad.id)) continue;
+      visitadas.add(unidad.id);
+      if (!asignadas.has(unidad.id) || encontrar(asignadas.get(unidad.id), visitadas)) {
+        asignadas.set(unidad.id, indice);
+        return true;
+      }
+    }
+    return false;
+  }
+  for (const [indice, linea] of lineas.entries()) {
+    if (!encontrar(indice, new Set())) {
+      throw errorHttp(409, 'No hay suficientes unidades de ' + linea.equipo + ' disponibles para estas fechas.');
+    }
+  }
+  const ids = [];
+  for (const [id, indice] of asignadas) ids[indice] = id;
+  return ids;
+}
+
 export function asignarUnidades(data, cotizacion, identificadores, autor = autorSinCuenta) {
   const lineas = cotizacion.lineas.flatMap(linea => Array(linea.cantidad).fill(linea));
-  if (!lineas.length || identificadores.length !== lineas.length) {
+  const ocupadas = new Set(data.rentals.filter(rentaVigente).map(renta => normalizarUnidad(renta.unit)));
+  const disponible = (unidad, linea) => unidad.state === 'Disponible'
+    && !ocupadas.has(normalizarUnidad(unidad.id))
+    && coincideModelo(unidad, { id: linea.equipoId, modelo: linea.modelo, tipo: linea.tipo })
+    && !chocaPreventivo(unidad, linea.inicio, linea.fin);
+  const seleccion = identificadores ?? seleccionarDisponibles(lineas, data.units, disponible);
+  if (!lineas.length || seleccion.length !== lineas.length) {
     throw errorHttp(400, 'Indica una unidad física por cada equipo cotizado.');
   }
-  const ids = identificadores.map(normalizarUnidad);
+  const ids = seleccion.map(normalizarUnidad);
   if (ids.some(id => !id || id.length > 64) || new Set(ids).size !== ids.length) {
     throw errorHttp(400, 'Los identificadores de las unidades deben ser válidos y distintos.');
   }
 
   const units = new Map(data.units.map(unidad => [normalizarUnidad(unidad.id), unidad]));
-  const ocupadas = new Set(data.rentals.filter(rentaVigente).map(renta => renta.unit));
   const at = new Date().toISOString();
   let numero = data.rentals.reduce((maximo, renta) =>
     Math.max(maximo, Number(renta.id.match(/^R-(\d+)$/)?.[1] ?? 0)), 0);
@@ -50,7 +80,7 @@ export function asignarUnidades(data, cotizacion, identificadores, autor = autor
     const id = ids[indice];
     const existente = units.get(id);
     const equipo = { id: linea.equipoId, nombre: linea.equipo, modelo: linea.modelo, tipo: linea.tipo };
-    if (existente && (chocaPreventivo(existente, linea.inicio, linea.fin) || !coincideModelo(existente, equipo) || existente.state !== 'Disponible' || ocupadas.has(existente.id))) {
+    if (existente && !disponible(existente, linea)) {
       throw errorHttp(409, `La unidad ${id} debe estar disponible y corresponder a ${linea.equipo}.`);
     }
     const unidad = existente ?? nuevaUnidad(equipo, id);

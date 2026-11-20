@@ -6,6 +6,27 @@ import { fork } from 'node:child_process';
 import pg from '../backend/node_modules/pg/lib/index.js';
 import sharp from '../backend/node_modules/sharp/lib/index.js';
 
+import { asignarUnidades } from '../backend/src/reservaciones.js';
+
+test('la asignación respeta el modelo y el mantenimiento de cada unidad', () => {
+  const linea = { equipoId: 1, equipo: 'Montacargas', cantidad: 1 };
+  const cotizacion = { id: 1, cliente: {}, lineas: [
+    { ...linea, inicio: '2026-11-01', fin: '2026-11-02' },
+    { ...linea, inicio: '2026-11-08', fin: '2026-11-09' },
+  ] };
+  const base = { catalogoId: 1, state: 'Disponible' };
+  const data = { rentals: [], units: [
+    { ...base, id: 'A' },
+    { ...base, id: 'B', taller: [{ estado: 'Programado', fecha: '2026-11-08' }] },
+    { ...base, id: 'C', catalogoId: 2 },
+  ] };
+  assert.deepEqual(asignarUnidades(data, cotizacion).rentals.map(r => r.unit), ['B', 'A']);
+  data.units[0].state = 'En mantenimiento';
+  assert.throws(() => asignarUnidades(data, cotizacion), /No hay suficientes unidades/);
+  assert.equal(data.rentals.length, 0);
+  assert.equal(data.units[1].state, 'Disponible');
+});
+
 // Usar una base de pruebas explícita. Cada ejecución crea su propio esquema vacío.
 test('recorrido del sprint 2 con cuentas reales y PostgreSQL', { skip: !process.env.TEST_DATABASE_URL }, async t => {
   const esquema = 'prueba_op_' + randomBytes(8).toString('hex');
@@ -94,7 +115,8 @@ test('recorrido del sprint 2 con cuentas reales y PostgreSQL', { skip: !process.
   let renta,otra,pendiente,foto;
   await t.test('dos asignaciones simultáneas mantienen una sola renta activa por unidad', async () => {
     const a = await cotizar(1), b = await cotizar(4);
-    const intentos = await Promise.all([asignar(a,'EQ-PRUEBA',null),asignar(b,'EQ-PRUEBA',null)]);
+    await pedir('POST','/operacion/equipos/1/unidades',operador,{unidad:'EQ-PRUEBA'});
+    const intentos = await Promise.all([a,b].map(id => pedir('POST','/operacion/reservaciones/'+id+'/asignar',operador,{automatica:true},null)));
     assert.deepEqual(intentos.map(i=>i.status).sort(),[200,409]);
     const panel = (await pedir('GET','/operacion',operador)).data;
     assert.equal(panel.rentals.length,1);
@@ -242,9 +264,9 @@ test('recorrido del sprint 2 con cuentas reales y PostgreSQL', { skip: !process.
     const menu = page.getByRole('group', {name:'Pendientes de operaciones'});
     const activas = panel.rentals.filter(r => r.status === 'En renta');
     const conteos = {
-      'Reservaciones': panel.reservaciones.length,
+      'Reservaciones': panel.reservaciones.reduce((total, c) => total + c.lineas.length, 0) + panel.rentals.filter(r => r.status === 'Apartado').length,
       'Rentas activas': activas.length,
-      'Preparación de equipos': panel.rentals.filter(r => ['Apartado','En preparación','En mantenimiento'].includes(r.status)).length,
+      'Preparación de equipos': panel.rentals.filter(r => ['En preparación','En mantenimiento'].includes(r.status)).length,
       'Recolecciones programadas': activas.filter(r => r.collection?.date).length,
       'Pendientes de revisión': panel.rentals.filter(r => r.status === 'En revisión').length,
     };
