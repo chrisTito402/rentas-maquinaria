@@ -51,6 +51,8 @@ export default function DetalleCotizacion() {
   );
   if (!cot) return <p className="f-cargando" role="status">Cargando cotización…</p>;
   const c = cot.cliente;
+  // HU-07: el servidor solo entrega el PDF al personal comercial (pdf.rutas.js).
+  const puedeDescargarPdf = ['admin', 'auxiliar'].includes(usuario?.rol);
 
   if (aprobadaAhora) return (
     <div className="detalle-aprobada">
@@ -59,7 +61,7 @@ export default function DetalleCotizacion() {
         <h1>Cotización aprobada</h1>
         <p>La cotización {cot.folio} quedó aprobada y su estado ya se actualizó en la lista.</p>
         <p className="f-alerta f-alerta--exito">Contacta al cliente por WhatsApp al {c.telefono} para darle seguimiento.</p>
-        <AccionesCotizacionPdf cotizacion={cot} />
+        {puedeDescargarPdf && <AccionesCotizacionPdf cotizacion={cot} />}
         <p>El siguiente paso es elegir las unidades físicas en Operación; todavía no se ha entregado ningún equipo.</p>
         <div className="confirmacion__acciones">
           <Link className="f-btn f-btn--primario" to={`/comercial/operacion/por-asignar?cotizacion=${cot.id}`}>Continuar a asignación →</Link>
@@ -167,7 +169,7 @@ export default function DetalleCotizacion() {
           {cot.estado === 'Pendiente' && usuario?.rol !== 'admin' && (
             <p className="f-alerta detalle-solo-admin">Solo el administrador puede aprobar esta cotización.</p>
           )}
-          {cot.estado === 'Aprobada' && <AccionesCotizacionPdf cotizacion={cot} />}
+          {cot.estado === 'Aprobada' && puedeDescargarPdf && <AccionesCotizacionPdf cotizacion={cot} />}
         </div>
       </div>
     </>

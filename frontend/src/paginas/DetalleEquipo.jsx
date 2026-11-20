@@ -59,6 +59,7 @@ export default function DetalleEquipo() {
   const cambiarCantidad = (n) => { setCantidad(Math.min(MAX_CANTIDAD, Math.max(1, n))); setMensaje(''); };
 
   function agregarEquipo() {
+    if (!equipo.disponible) return;
     const choque = buscarChoque({ fechaInicio, fechaFin }, ocupados);
     if (choque) { setAviso(mensajeChoque(choque)); return; }
     // HU-13b: sin municipio, primero se pregunta a dónde llevar el equipo (frame «2d»).
@@ -164,8 +165,10 @@ export default function DetalleEquipo() {
               : <p className="f-campo__ayuda">Elige la fecha de inicio y la de fin para ver el costo.</p>}
           </div>
 
-          <button type="button" className="f-btn f-btn--primario f-btn--grande" disabled={!fechasValidas} onClick={agregarEquipo}>
-            {fechasValidas ? 'Agregar a mi cotización' : 'Elige la fecha de inicio y la de fin'}
+          {/* HU-01b: un equipo No disponible se muestra, pero no se puede cotizar. */}
+          <button type="button" className="f-btn f-btn--primario f-btn--grande" disabled={!equipo.disponible || !fechasValidas} onClick={agregarEquipo}>
+            {!equipo.disponible ? 'Equipo no disponible por ahora'
+              : fechasValidas ? 'Agregar a mi cotización' : 'Elige la fecha de inicio y la de fin'}
           </button>
           {mensaje ? (
             <div className="ficha-agregado">
