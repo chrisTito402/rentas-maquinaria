@@ -1,10 +1,11 @@
 // Calendario para elegir el rango de renta: primer clic = inicio, segundo clic = fin.
 // Uso: <CalendarioRango inicio="2026-10-12" fin="2026-10-15" onCambio={(inicio, fin) => ...}
 //                       ocupados={[{ inicio, fin }]} onChoque={(mensaje) => ...} />
-// HU-02a (Chris): los días ocupados se ven marcados y no se pueden elegir; si el rango
-// brinca un día ocupado, no se acepta y se avisa con onChoque.
+// HU-02a (Chris): los días ocupados se ven marcados y no se pueden elegir. Con el inicio ya elegido,
+// el rango se detiene antes del siguiente día ocupado (frame «Ficha · Estado fechas ocupadas (HU-02a)»);
+// si aun así el rango brinca un día ocupado, no se acepta y se avisa con onChoque.
 import { useState } from 'react';
-import { chocan, estaOcupado, mensajeChoque } from '@compartido/ocupadas.js';
+import { chocan, estaOcupado, limiteFin, mensajeChoque } from '@compartido/ocupadas.js';
 
 const DIAS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 const iso = (anio, mes, dia) => `${anio}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
@@ -38,6 +39,7 @@ export default function CalendarioRango({ inicio, fin, onCambio, ocupados = [], 
     return onCambio(inicio, dia);
   }
 
+  const tope = inicio && !fin ? limiteFin(inicio, ocupados) : null;
   const celdas = [];
   for (let i = 0; i < primerDia; i += 1) celdas.push(<span key={`v${i}`} />);
   for (let d = 1; d <= totalDias; d += 1) {
@@ -45,11 +47,12 @@ export default function CalendarioRango({ inicio, fin, onCambio, ocupados = [], 
     const extremo = dia === inicio || dia === fin;
     const enRango = inicio && fin && dia > inicio && dia < fin;
     const ocupado = estaOcupado(dia, ocupados);
+    const fuera = Boolean(tope) && dia > tope.hasta;   // después del bloque ocupado: no puede ser el fin
     const nombre = new Date(anio, mes, d).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
     celdas.push(
       <button
-        type="button" key={dia} onClick={() => elegir(dia)} disabled={ocupado}
-        className={`calendario__dia${enRango ? ' calendario__dia--rango' : ''}${extremo ? ' calendario__dia--extremo' : ''}${ocupado ? ' calendario__dia--ocupado' : ''}`}
+        type="button" key={dia} onClick={() => elegir(dia)} disabled={ocupado || fuera}
+        className={`calendario__dia${enRango ? ' calendario__dia--rango' : ''}${extremo ? ' calendario__dia--extremo' : ''}${ocupado ? ' calendario__dia--ocupado' : ''}${fuera ? ' calendario__dia--fuera' : ''}`}
         aria-pressed={extremo || Boolean(enRango)}
         aria-label={ocupado ? `${nombre}, ocupado` : nombre}
       >

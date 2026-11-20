@@ -1,10 +1,13 @@
 // Encabezado y menú de la página del cliente (frame «1 · Catálogo de equipos» del Figma).
+// HU-13b (Chris): botón del municipio de entrega en el encabezado.
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useCarrito } from '../carrito/CarritoContext.jsx';
+import ElegirMunicipio from './ElegirMunicipio.jsx';
 
 export default function Layout() {
-  const { lineas } = useCarrito();
+  const { lineas, municipio, setMunicipio } = useCarrito();
+  const [eligiendo, setEligiendo] = useState(false);   // HU-13b
   const [salta, setSalta] = useState(false);
   const anterior = useRef(lineas.length);
 
@@ -31,6 +34,15 @@ export default function Layout() {
             </span>
           </Link>
           <nav className="sitio-nav" aria-label="Navegación principal">
+            {/* HU-13b: municipio de entrega para calcular el envío (frame «2c · Detalle sin municipio») */}
+            <button type="button" className="sitio-municipio" onClick={() => setEligiendo(true)}
+              aria-label={municipio ? `Municipio de entrega: ${municipio}. Cambiar` : 'Elegir municipio de entrega'}>
+              <img src="/img/iconos/ubicacion.svg" alt="" />
+              <span className="sitio-municipio__largo">
+                {municipio ? <>Entrega en {municipio} <span>· Cambiar</span></> : 'Elige municipio de entrega'}
+              </span>
+              <span className="sitio-municipio__corto">{municipio || 'Municipio'}</span>
+            </button>
             <NavLink to="/" end className="sitio-nav__link">Catálogo</NavLink>
             <NavLink to="/mi-cotizacion" className="sitio-nav__cotizacion">
               <img src="/img/iconos/cotizacion.svg" alt="" />
@@ -40,6 +52,11 @@ export default function Layout() {
           </nav>
         </div>
       </header>
+      <ElegirMunicipio
+        abierto={eligiendo} valor={municipio}
+        onElegir={(m) => { setMunicipio(m); setEligiendo(false); }}
+        onCerrar={() => setEligiendo(false)}
+      />
       <main className="sitio-principal">
         <Outlet />
       </main>
