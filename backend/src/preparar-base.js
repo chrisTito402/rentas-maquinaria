@@ -15,6 +15,7 @@ export async function prepararBase(conexion = pool) {
       to_regclass('cotizacion_equipos') AS detalle`);
     const nueva = Object.values(estado).every(tabla => tabla === null);
     await db.query(await readFile(new URL('../db/arranque.sql', import.meta.url), 'utf8'));
+    await db.query(await readFile(new URL('../db/auth.sql', import.meta.url), 'utf8'));
     if (nueva) {
       await db.query(await readFile(new URL('../db/semilla.sql', import.meta.url), 'utf8'));
     }

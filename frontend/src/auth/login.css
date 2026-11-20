@@ -1,0 +1,36 @@
+
+    .acceso * { box-sizing: border-box; }
+    .acceso { margin: 0; font-family: Inter, system-ui, sans-serif; color: var(--f-texto); background: var(--f-fondo); }
+    .acceso ::selection { background: #ffedd5; color: #0f172a; }
+    .acceso a { color: #9a3412; text-underline-offset: 4px; }
+    .acceso button { font-family: inherit; margin-top: 0; }
+    .acceso input { font: inherit; }
+    .acceso :focus-visible { outline: 3px solid #9a3412; outline-offset: 4px; }
+    .acceso-header { height: 94px; padding: 0 6%; background: white; border-bottom: 1px solid var(--f-borde); display: flex; align-items: center; }
+    .acceso .acceso-brand { display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit; }
+    .acceso-brand img { width: 46px; height: 46px; }
+    .acceso-brand strong { display: block; font-size: 18px; }
+    .acceso-brand span { display: block; color: var(--f-texto-2); font-size: 12px; margin-top: 5px; }
+    .acceso-main { min-height: calc(100svh - 155px); display: grid; place-items: center; padding: 48px 20px; }
+    .acceso-login { width: 100%; max-width: 440px; background: white; padding: 38px; border: 1px solid var(--f-borde); border-radius: var(--f-r-lg); box-shadow: var(--f-sombra); }
+    .acceso h1 { margin: 0 0 10px; font-size: 28px; letter-spacing: -.7px; line-height: 1.2; }
+    .acceso-intro { color: var(--f-texto-2); margin: 0 0 30px; line-height: 1.6; font-size: 14px; }
+    .acceso label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 9px; }
+    .acceso-field { margin-bottom: 22px; }
+    .acceso input { width: 100%; border: 1px solid var(--f-borde-input); border-radius: var(--f-r-sm); height: 48px; padding: 0 13px; background: white; color: var(--f-texto); caret-color: #9a3412; min-width: 0; }
+    .acceso input::placeholder { color: var(--f-tenue); }
+    .acceso-password { position: relative; }
+    .acceso-password input { padding-right: 90px; }
+    .acceso-show { position: absolute; right: 5px; top: 5px; height: 38px; padding: 0 10px; background: transparent; border: 0; color: var(--f-texto-2); font-size: 12px; font-weight: 600; cursor: pointer; border-radius: 5px; }
+    .acceso-show:hover { background: var(--f-sutil); }
+    .acceso-submit { width: 100%; border: 0; height: 48px; background: var(--f-accion); color: #431407; font-weight: 700; border-radius: var(--f-r-sm); cursor: pointer; }
+    .acceso-submit:hover { background: #fb923c; }
+    .acceso-back { display: block; text-align: center; margin-top: 24px; font-size: 13px; font-weight: 600; }
+    .acceso-footer { text-align: center; padding: 20px; color: var(--f-texto-2); font-size: 12px; }
+    @media (max-width: 480px) { .acceso-header { height: 82px; padding: 0 20px; } .acceso-brand strong { font-size: 16px; } .acceso-login { padding: 28px 24px; } .acceso-main { min-height: calc(100svh - 155px); padding: 32px 16px; } }
+
+.acceso-submit:disabled { opacity: .65; cursor: wait; }
+.acceso-error { color: var(--f-error); background: var(--f-error-fondo); padding: 12px; border-radius: 8px; font-size: 14px; line-height: 1.5; }
+.acceso-espera { padding: 48px 24px; text-align: center; }
+.acceso-salir { display: block; margin-top: 12px; padding: 9px 12px; border: 1px solid var(--f-borde); border-radius: 8px; background: white; color: var(--f-texto); font: inherit; cursor: pointer; }
+@media (max-width: 760px) { .comercial-menu .comercial-menu__perfil { display: block; margin: 0; } }

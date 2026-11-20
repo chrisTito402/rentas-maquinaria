@@ -10,6 +10,7 @@ async function pedir(metodo, url, cuerpo) {
   });
   const datos = await resp.json().catch(() => ({}));
   if (!resp.ok) {
+    if (resp.status === 401 && !url.startsWith('/auth/')) window.dispatchEvent(new Event('sesion-expirada'));
     const error = new Error(datos.error || 'No se pudo conectar con el servidor');
     error.status = resp.status;
     error.datos = datos;

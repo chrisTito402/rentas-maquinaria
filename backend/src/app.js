@@ -7,11 +7,15 @@ import solicitudes from './rutas/solicitudes.rutas.js';
 import aprobaciones from './rutas/aprobaciones.rutas.js';
 import consultas from './rutas/consultas.rutas.js';
 import operacion from './rutas/operacion.rutas.js';
+import { crearRutasAuth } from './auth/rutas.js';
+import { comprobarOrigen, protegerSesion } from './auth/sesion.js';
 
 export const app = express();
 app.disable('x-powered-by');
-app.use('/api/operacion', express.json({ limit: '1200kb' }), operacion);
+if (process.env.NODE_ENV === 'production') app.set('trust proxy', 1);
+app.use('/api/operacion', comprobarOrigen, protegerSesion(), express.json({ limit: '1200kb' }), operacion);
 app.use(express.json());
+app.use('/api/auth', crearRutasAuth());
 
 app.get('/api/salud', async (req, res) => {
   await query('SELECT 1');
@@ -19,7 +23,7 @@ app.get('/api/salud', async (req, res) => {
 });
 
 app.use('/api/equipos', equipos);
-app.use('/api/cotizaciones', solicitudes, aprobaciones, consultas);
+app.use('/api/cotizaciones', solicitudes, comprobarOrigen, protegerSesion(), aprobaciones, consultas);
 
 // Las rutas de la API nunca deben devolver la página de React.
 app.use('/api', (req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));

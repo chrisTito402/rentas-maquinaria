@@ -1,0 +1,15 @@
+✔ OP-02 | asignar varias unidades conserva folio, cantidades y cliente (4.2303ms)
+✔ OP-03 | el avance de una unidad no modifica la segunda ni los datos de entrada (1.1509ms)
+✔ OP-04 | cada renta pertenece a una sola etapa, incluyendo mantenimiento e historial (0.2853ms)
+✔ OP-05 | bloquear entrega antes de confirmar preparación sin alterar datos (0.8432ms)
+✔ OP-06 | confirmar preparación habilita la entrega sin efectuarla automáticamente (0.3576ms)
+✔ OP-07 | mantenimiento bloquea entrega y permite retomar preparación con nueva revisión (0.5824ms)
+✔ OP-11 | rechazar devolución anterior a entrega y aceptar devolución el mismo día (0.562ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 113.3263

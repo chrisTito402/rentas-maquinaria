@@ -7,6 +7,8 @@ import Operacion from './paginas/operacion/FlujoOperacion.jsx';
 import PanelLayout from './paginas/comercial/PanelLayout.jsx';
 import CotizacionesComercial from './paginas/comercial/Cotizaciones.jsx';
 import DetalleCotizacionComercial from './paginas/comercial/DetalleCotizacion.jsx';
+import Login from './auth/Login.jsx';
+import { RequiereSesion } from './auth/Sesion.jsx';
 
 // Enlaces anteriores: /admin/... y /panel/cotizaciones/... llevan al panel comercial.
 function RutaAnterior({ comercial = false }) {
@@ -25,6 +27,8 @@ function RutaGestion() {
 export default function App() {
   return (
     <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route element={<RequiereSesion />}>
       <Route path="/comercial" element={<PanelLayout />}>
         <Route index element={<Navigate to="inicio" replace />} />
         <Route path="inicio" element={<Operacion vista="inicio" />} />
@@ -36,6 +40,7 @@ export default function App() {
         <Route path="inventario" element={<Operacion vista="equipos" />} />
         <Route path="historial" element={<Operacion vista="historial" />} />
         <Route path="*" element={<Navigate to="/comercial/inicio" replace />} />
+      </Route>
       </Route>
       <Route path="/gestion/*" element={<RutaGestion />} />
       <Route path="/admin/:seccion?" element={<RutaAnterior />} />
