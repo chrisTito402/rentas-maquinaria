@@ -1,0 +1,59 @@
+/* HU-05 · Nueva cotización desde el panel (frames 4 y 4b del Figma) */
+.comercial-encabezado__acciones { display: flex; align-items: center; gap: 12px; }
+.nueva-intro { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.nueva-intro h1 { font-size: 30px; font-weight: 800; letter-spacing: -.6px; }
+.nueva-intro p { font-size: 14px; color: var(--f-texto-2); }
+
+.nueva { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; }
+.nueva-form { padding: 24px; display: flex; flex-direction: column; gap: 18px; }
+.nueva-form h2 { font-size: 16px; font-weight: 700; }
+.nueva-form > header p { font-size: 12px; color: var(--f-tenue); margin-top: 6px; }
+
+/* Equipos */
+.nueva-equipos { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--f-borde); padding-top: 18px; }
+.nueva-equipos__titulos, .nueva-linea { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr) 60px 92px 24px; gap: 12px; align-items: center; }
+.nueva-equipos__titulos span { font-size: 11px; font-weight: 600; color: var(--f-texto-2); text-transform: uppercase; letter-spacing: .5px; }
+.nueva-linea select, .nueva-linea input, .nueva-linea__boton-fechas {
+  width: 100%; min-height: 42px; padding: 8px 12px; font: inherit; font-size: 14px; color: var(--f-texto);
+  background: var(--f-blanco); border: 1px solid var(--f-borde-input); border-radius: var(--f-r-sm); margin: 0;
+}
+.nueva-linea input { text-align: center; }
+.nueva-linea select:focus, .nueva-linea input:focus { outline: none; border-color: var(--f-accion); box-shadow: 0 0 0 3px rgba(249, 115, 22, .15); }
+.comercial .nueva-linea__boton-fechas { display: flex; align-items: center; gap: 6px; text-align: left; white-space: nowrap; overflow: hidden; border: 1px solid var(--f-borde-input); border-radius: var(--f-r-sm); background: var(--f-blanco); }
+.comercial .nueva-linea__boton-fechas.abierto { border-color: var(--f-accion); }
+.nueva-linea__boton-fechas small { margin-left: auto; font-size: 11px; color: var(--f-tenue); white-space: nowrap; }
+.nueva-linea__fechas { position: relative; }
+.nueva-linea__calendario {
+  position: absolute; top: calc(100% + 8px); left: 0; z-index: 10; width: 300px;
+  background: var(--f-blanco); border: 1px solid var(--f-borde); border-radius: var(--f-r-lg); box-shadow: var(--f-sombra-hover); padding: 8px;
+}
+.nueva-linea__calendario .calendario { background: var(--f-blanco); }
+.nueva-linea__choque { margin: 8px 8px 0; font-size: 12px; }
+.nueva-linea__pie { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 4px 8px 8px; }
+.nueva-linea__pie strong { display: block; font-size: 13px; }
+.nueva-linea__pie small { display: block; font-size: 11px; color: var(--f-tenue); }
+.nueva-linea__subtotal { text-align: right; font-size: 14px; white-space: nowrap; }
+.comercial .nueva-linea__quitar { font-size: 20px; color: var(--f-tenue); line-height: 1; }
+.comercial .nueva-linea__quitar:hover { color: var(--f-error); }
+.comercial .nueva-equipos__agregar { align-self: flex-start; color: var(--f-accion); font-weight: 600; font-size: 14px; }
+.comercial .nueva-equipos__agregar:hover { text-decoration: underline; }
+.nueva-notas { border-top: 1px solid var(--f-borde); padding-top: 18px; }
+
+/* Columna derecha */
+.nueva-lado { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 12px; }
+.nueva-desglose { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+.nueva-desglose .f-desglose__total strong { font-size: 26px; }
+.nueva-desglose h2 { font-size: 12px; font-weight: 600; color: var(--f-texto-2); text-transform: uppercase; letter-spacing: .5px; }
+.nueva-lado__nota { font-size: 12px; color: var(--f-tenue); }
+
+@media (max-width: 960px) {
+  .nueva { grid-template-columns: 1fr; }
+  .nueva-lado { position: static; }
+}
+@media (max-width: 640px) {
+  .nueva-form { padding: 16px; }
+  .nueva-equipos__titulos { display: none; }
+  .nueva-linea { grid-template-columns: 64px 1fr 28px; padding-bottom: 12px; border-bottom: 1px solid var(--f-borde); }
+  .nueva-linea select, .nueva-linea__fechas { grid-column: 1 / -1; }
+  .nueva-linea__calendario { width: 100%; min-width: 280px; }
+}

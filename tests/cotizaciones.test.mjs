@@ -219,3 +219,24 @@ test('HU-16 · filtrar por estado y origen solo trae las que coinciden', async (
   assert.ok(aprobadas.datos.every((c) => c.estado === 'Aprobada'));
   assert.ok(!aprobadas.datos.some((c) => c.id === creada.datos.id));
 });
+
+// HU-05 · Crear cotización desde el panel
+test('HU-05 · sin sesión no se puede crear una cotización desde el panel', async () => {
+  const respuesta = await fetch(origen + '/api/cotizaciones/panel', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(solicitud),
+  });
+  assert.equal(respuesta.status, 401);
+});
+
+test('HU-05 · la misma cotización por /web y por /panel da el mismo total; la del panel queda Panel y Pendiente', async (t) => {
+  if (!hayBase) return t.skip('sin PostgreSQL');
+  const web = await pedir('POST', '/api/cotizaciones/web', solicitud);
+  const panel = await pedir('POST', '/api/cotizaciones/panel', solicitud);
+  assert.equal(web.status, 201);
+  assert.equal(panel.status, 201);
+  t.after(async () => { await borrarCotizacion(web.datos.id); await borrarCotizacion(panel.datos.id); });
+  assert.equal(panel.datos.total, web.datos.total);
+  assert.match(panel.datos.folio, /^COT-\d{4,}$/);
+  const { rows } = await query('SELECT origen, estado FROM cotizaciones WHERE id = $1', [panel.datos.id]);
+  assert.deepEqual(rows[0], { origen: 'Panel', estado: 'Pendiente' });
+});
