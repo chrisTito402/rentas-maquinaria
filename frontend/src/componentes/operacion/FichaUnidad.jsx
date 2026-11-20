@@ -27,7 +27,7 @@ function FormularioTaller({ unidad, guardar }) {
       <label className="field">{accion === 'liberar' ? 'Revisión final' : accion === 'trabajo' ? 'Trabajo realizado' : 'Motivo'}<textarea name="notes" maxLength={2000} required /></label>
       {['trabajo','liberar'].includes(accion) && <label className="field">Mecánico<input name="mechanic" required maxLength={100} /></label>}
       {accion === 'trabajo' && <label className="field">Resultado<input name="result" required maxLength={2000} /></label>}
-      <button className="button dark" disabled={enCurso}>Guardar movimiento</button>
+      <button type="submit" className="button dark" disabled={enCurso}>Guardar movimiento</button>
     </form>}{error && <p role="alert">{error}</p>}
   </section>;
 }

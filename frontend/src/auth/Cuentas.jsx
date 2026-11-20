@@ -14,7 +14,7 @@ function Fila({ cuenta, propia, guardar, ocupado }) {
   return <tr><th scope="row">{cuenta.nombre}</th>
     <td><select aria-label={'Perfil de ' + cuenta.nombre} disabled={propia || ocupado} value={rol} onChange={e => setRol(e.target.value)}><Opciones /></select></td>
     <td><label className="cuenta-habilitada"><input type="checkbox" disabled={propia || ocupado} checked={activo} onChange={e => setActivo(e.target.checked)} /> Habilitada</label></td>
-    <td>{propia ? 'Tu cuenta' : <button className="button soft" disabled={ocupado || (rol === cuenta.rol && activo === cuenta.activo)} onClick={() => guardar(cuenta.id, { rol, activo })}>Guardar</button>}</td></tr>;
+    <td>{propia ? 'Tu cuenta' : <button type="button" className="button soft" disabled={ocupado || (rol === cuenta.rol && activo === cuenta.activo)} onClick={() => guardar(cuenta.id, { rol, activo })}>Guardar</button>}</td></tr>;
 }
 
 export default function Cuentas() {
@@ -51,9 +51,9 @@ export default function Cuentas() {
       <label>Usuario<input name="nombre" required maxLength={100} autoComplete="off" /></label>
       <label>Contraseña inicial<input name="contrasena" type="password" autoComplete="new-password" minLength={12} maxLength={256} required /></label>
       <label>Perfil<select name="rol" defaultValue="consulta"><Opciones /></select></label>
-      <button className="button dark" disabled={ocupado}>Crear cuenta</button>
+      <button type="submit" className="button dark" disabled={ocupado}>Crear cuenta</button>
     </form>
-    {error && <p role="alert">{error} <button onClick={() => { setError(''); setIntento(n => n + 1); }}>Volver a cargar cuentas</button></p>}
+    {error && <p role="alert">{error} <button type="button" onClick={() => { setError(''); setIntento(n => n + 1); }}>Volver a cargar cuentas</button></p>}
     {aviso && <p role="status">{aviso}</p>}
     <div className="table-scroll"><table className="gestion-table"><thead><tr><th>Usuario</th><th>Perfil</th><th>Acceso</th><th>Cambios</th></tr></thead>
     <tbody>{cuentas.map(c => <Fila key={c.id + ':' + c.rol + ':' + c.activo} cuenta={c} propia={c.id === usuario.id} guardar={guardar} ocupado={ocupado} />)}</tbody></table></div>

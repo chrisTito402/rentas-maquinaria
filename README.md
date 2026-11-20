@@ -124,7 +124,11 @@ npm start --prefix backend
 ```
 
 Agrega `NODE_ENV=production` y `DATABASE_URL` con la Internal Database URL de
-Render. No guardes esa dirección en GitHub. No necesitas configurar `PORT`.
+Render. En el mismo Web Service configura `AUTH_KEY` con la clave de esa base.
+Si es la primera vez que creas cuentas, genera la clave con
+`node -p "require('node:crypto').randomBytes(32).toString('hex')"`
+y guarda los 64 caracteres en Render. Conserva esa clave para los siguientes despliegues.
+No guardes la dirección de la base ni la clave en GitHub. No necesitas configurar `PORT`.
 En Health Check Path puedes usar `/api/salud`.
 
 Al arrancar, el servidor prepara las tablas que falten. Carga los ejemplos

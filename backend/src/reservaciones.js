@@ -1,3 +1,4 @@
+import { autorSinCuenta } from '../../compartido/operacion/registros.js';
 import { rentaVigente, chocaPreventivo } from '../../compartido/operacion/taller.js';
 import { errorHttp } from './errores.js';
 import { nuevaUnidad } from './catalogo.js';
@@ -29,7 +30,7 @@ export async function cotizacionesAprobadas(db, id = null) {
 
 export const normalizarUnidad = valor => String(valor ?? '').trim().toUpperCase();
 
-export function asignarUnidades(data, cotizacion, identificadores, autor = { by: 'Sin cuenta' }) {
+export function asignarUnidades(data, cotizacion, identificadores, autor = autorSinCuenta) {
   const lineas = cotizacion.lineas.flatMap(linea => Array(linea.cantidad).fill(linea));
   if (!lineas.length || identificadores.length !== lineas.length) {
     throw errorHttp(400, 'Indica una unidad física por cada equipo cotizado.');
