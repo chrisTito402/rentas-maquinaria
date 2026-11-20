@@ -40,8 +40,13 @@ export function aplicarTaller(data, id, accion, campos, autor) {
       if (activa?.status === 'En renta' && !activa.issues?.some(i => i.estado === 'Taller')) throw new Error('Registra primero la falla y su envío a taller.');
       const plan = campos.plan ? ordenes.find(o => o.at === campos.plan && o.estado === 'Programado') : null;
       if (campos.plan && !plan) throw new Error('Ese preventivo ya cambió, vuelve a abrir la ficha.');
-      if (plan) Object.assign(plan, { estado: 'En taller', ingreso: evento });
-      else ordenes.push({ ...evento, estado: 'En taller', ingreso: evento, trabajos: [] });
+      // Una reparación solo cierra las fallas enviadas a este ingreso.
+      const origen = activa ?? next.rentals.filter(r => unidad.state === 'En mantenimiento' && r.unit === id && r.status === 'Cerrada' && r.finalReview?.result === 'En mantenimiento')
+        .sort((a, b) => (b.events.at(-1)?.at ?? '').localeCompare(a.events.at(-1)?.at ?? ''))[0];
+      const fallas = (origen?.issues ?? []).filter(f => f.estado === 'Taller').map(f => ({ rentaId: origen.id, fallaId: f.id }));
+      const ingreso = { estado: 'En taller', ingreso: evento, fallas };
+      if (plan) Object.assign(plan, ingreso);
+      else ordenes.push({ ...evento, ...ingreso, trabajos: [] });
       unidad.state = 'En mantenimiento';
       unidad.maintenanceStartedAt = at;
       if (activa && ['Apartado', 'En preparación'].includes(activa.status)) { activa.status = 'En mantenimiento'; activa.ready = false; }
@@ -60,11 +65,16 @@ export function aplicarTaller(data, id, accion, campos, autor) {
         orden.estado = 'Terminado';
         if (activa?.status === 'En mantenimiento') { activa.status = 'En preparación'; activa.ready = false; }
         unidad.state = activa?.status ?? 'Disponible';
-        for (const r of next.rentals.filter(r => r.unit === id)) {
-          for (const falla of r.issues ?? []) if (falla.estado === 'Taller') {
-            falla.estado = 'Resuelta';
-            (falla.revisiones ??= []).push({ ...orden.salida, resultado: 'Reparada en taller' });
-          }
+        // En órdenes anteriores al vínculo explícito solo se puede identificar con certeza la renta activa al ingresar.
+        const referencias = orden.fallas ?? (activa?.issues ?? []).filter(f =>
+          f.estado === 'Taller' && f.revisiones?.some(r => r.resultado === 'Taller' && r.at <= orden.ingreso.at)
+        ).map(f => ({ rentaId: activa.id, fallaId: f.id }));
+        for (const ref of referencias) {
+          const registro = next.rentals.find(r => r.id === ref.rentaId && r.unit === id);
+          const falla = registro?.issues?.find(f => f.id === ref.fallaId && f.estado === 'Taller');
+          if (!falla) continue;
+          falla.estado = 'Resuelta';
+          (falla.revisiones ??= []).push({ ...orden.salida, resultado: 'Reparada en taller' });
         }
         texto = 'Equipo liberado de taller';
       }

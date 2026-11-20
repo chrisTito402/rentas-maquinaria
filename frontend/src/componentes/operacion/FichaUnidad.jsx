@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { trabajoAbierto } from '@compartido/operacion/taller.js';
 
 const acciones = { programar: 'Programar preventivo', ingresar: 'Registrar ingreso a taller', trabajo: 'Registrar trabajo', liberar: 'Liberar equipo' };
@@ -33,8 +33,9 @@ function FormularioTaller({ unidad, guardar }) {
 }
 
 export default function FichaUnidad({ unidad, rentas, guardar }) {
-  if (!unidad) return <section className="panel"><h1>No encontramos la unidad</h1><Link to="/comercial/inventario">Volver al inventario</Link></section>;
-  return <><Link to="/comercial/inventario">Volver al inventario</Link>
+  const inventario = '/comercial/inventario' + useLocation().search;
+  if (!unidad) return <section className="panel"><h1>No encontramos la unidad</h1><Link to={inventario}>Volver al inventario</Link></section>;
+  return <><Link to={inventario}>Volver al inventario</Link>
     <header className="page-heading"><div><h1>{unidad.id}</h1><p>{unidad.name} · {unidad.model} · {unidad.state}</p><p>Serie {unidad.serial || unidad.id}</p></div></header>
     {guardar && <FormularioTaller unidad={unidad} guardar={guardar} />}
     <section className="panel"><h2>Historial de taller</h2>

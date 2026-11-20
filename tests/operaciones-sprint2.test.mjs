@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { once } from 'node:events';
+import { fork } from 'node:child_process';
 import pg from '../backend/node_modules/pg/lib/index.js';
 import sharp from '../backend/node_modules/sharp/lib/index.js';
 
@@ -19,18 +20,22 @@ test('recorrido del sprint 2 con cuentas reales y PostgreSQL', { skip: !process.
   const { pool } = await import('../backend/src/db.js');
   const { prepararBase } = await import('../backend/src/preparar-base.js');
   const { cifrarUsuario, indiceUsuario, hashContrasena } = await import('../backend/src/auth/credenciales.js');
-  const { app } = await import('../backend/src/app.js');
   await prepararBase();
   const clave = randomBytes(20).toString('hex');
   await pool.query("INSERT INTO auth_usuarios(usuario_cifrado,usuario_indice,contrasena_hash,rol) VALUES ($1,$2,$3,'admin')",
     [cifrarUsuario('encargado'), indiceUsuario('encargado'), await hashContrasena(clave)]);
   let server, base;
   async function arrancar() {
-    server = app.listen(0, '127.0.0.1');
-    await once(server, 'listening');
-    base = 'http://127.0.0.1:' + server.address().port + '/api';
+    server = fork(new URL('./soporte/servidor-operaciones.mjs', import.meta.url), [], { execArgv: [] });
+    const [puerto] = await once(server, 'message', { signal: AbortSignal.timeout(15000) });
+    base = 'http://127.0.0.1:' + puerto + '/api';
   }
-  const detener = () => new Promise(resolve => server.close(resolve));
+  async function detener() {
+    if (!server.connected) return;
+    const salida = once(server, 'exit');
+    server.disconnect();
+    await salida;
+  }
   await arrancar();
   t.after(async () => { await detener(); await pool.end(); });
   async function pedir(method, path, cookie, body, esperado = 200) {
@@ -70,6 +75,7 @@ test('recorrido del sprint 2 con cuentas reales y PostgreSQL', { skip: !process.
     const auxiliar = personal.auxiliar.cookie;
     await pedir('POST','/auth/logout',auxiliar,{});
     await pedir('GET','/operacion',auxiliar,null,401);
+    await pedir('POST','/operacion/acciones',auxiliar,{},401);
     await pedir('POST','/cotizaciones/panel',operador,{},403);
   });
   const hoy = new Date().toLocaleDateString('sv-SE',{ timeZone: 'America/Hermosillo' });
@@ -104,15 +110,25 @@ test('recorrido del sprint 2 con cuentas reales y PostgreSQL', { skip: !process.
     await mover(renta,'photo',{image:'data:image/png;base64,'+Buffer.from('archivo ilegible').toString('base64')},400);
     await mover(renta,'deliver',{date:hoy,receiver:'Cliente de prueba'});
     await mover(renta,'cancel',{notes:'Cambio',confirm:'si'},409);
+    await mover(renta,'issue',{date:proxima(-1),notes:'Antes de entregar',mechanic:'Ana'},409);
     await mover(renta,'issue',{date:hoy,notes:'Ruido en rueda',mechanic:'Ana'});
+    await mover(renta,'review',{date:hoy,notes:'Continúa en revisión',mechanic:'Ana',issueId:'1',result:'Pendiente'});
+    await mover(renta,'issue',{date:hoy,notes:'Ajuste menor',mechanic:'Joel'});
+    await mover(renta,'review',{date:hoy,notes:'Ajuste en sitio',mechanic:'Joel',issueId:'2',result:'Resuelta'});
     await mover(renta,'review',{date:hoy,notes:'Requiere reparación',mechanic:'Ana',issueId:'1',result:'Taller'});
     await taller('EQ-PRUEBA','ingresar',{notes:'Revisar rueda'});
     await taller('EQ-PRUEBA','liberar',{notes:'Lista',mechanic:'Ana'},409);
+    await mover(renta,'issue',{date:hoy,notes:'Otra pieza por revisar',mechanic:'Joel'});
+    await mover(renta,'review',{date:hoy,notes:'Requiere otro trabajo',mechanic:'Joel',issueId:'3',result:'Taller'});
     await taller('EQ-PRUEBA','trabajo',{notes:'Cambio de rueda',mechanic:'Ana',result:'Gira bien'});
     const {data} = await taller('EQ-PRUEBA','liberar',{notes:'Revisada',mechanic:'Ana'});
     assert.equal(data.units[0].state,'En renta');
     assert.equal(data.rentals[0].issues[0].estado,'Resuelta');
     assert.equal(data.rentals[0].events.at(-1).usuarioId,personal.operador.id);
+    assert.deepEqual(data.rentals[0].issues.map(f => f.estado), ['Resuelta','Resuelta','Taller']);
+    await taller('EQ-PRUEBA','ingresar',{notes:'Segunda reparación'});
+    await taller('EQ-PRUEBA','trabajo',{notes:'Cambiar pieza',mechanic:'Joel',result:'Funciona'});
+    await taller('EQ-PRUEBA','liberar',{notes:'Segunda falla atendida',mechanic:'Joel'});
     await mover(renta,'return',{date:hoy,receiver:'Ana'});
     await mover(renta,'close',{mechanic:'Ana',notes:'Equipo completo',result:'Disponible'});
   });
@@ -124,17 +140,50 @@ test('recorrido del sprint 2 con cuentas reales y PostgreSQL', { skip: !process.
     const {data} = await asignar(pendiente,'EQ-OTRA');
     otra = data.rentals.find(r=>r.unit==='EQ-OTRA').id;
     await mover(otra,'cancel',{notes:'Cambio',confirm:'no'},409);
+    await mover(otra,'cancel',{notes:'  ',confirm:'si'},409);
     const fin = (await mover(otra,'cancel',{notes:'El cliente pospuso el trabajo',confirm:'si'})).data;
     assert.equal(fin.units.find(u=>u.id==='EQ-OTRA').state,'Disponible');
     assert.equal(fin.rentals.find(r=>r.id===otra).cancelacion.by,'operador');
   });
   await t.test('persiste la foto, el historial y la cancelación al volver a abrir el servidor', async () => {
+    const procesoAnterior = server.pid;
     await detener(); await arrancar();
+    assert.notEqual(server.pid, procesoAnterior);
     const {data} = await pedir('GET','/operacion',operador);
     assert.equal(data.rentals.find(r=>r.id===renta).documentPhoto.image,foto);
     assert.equal(data.rentals.find(r=>r.id===otra).status,'Cancelada');
     assert.equal(data.units.find(u=>u.id==='EQ-PRUEBA').taller[0].trabajos[0].mecanico,'Ana');
     assert.equal(data.rentals.find(r=>r.id===renta).events.at(-1).by,'operador');
+  });
+  await t.test('un preventivo y dos cancelaciones respetan el historial de la misma unidad', async () => {
+    const id = 'EQ-TALLER';
+    await pedir('POST','/operacion/equipos/1/unidades',operador,{unidad:id});
+    const unidad = panel => panel.data.units.find(u=>u.id===id);
+    const preventiva = unidad(await taller(id,'programar',{notes:'Servicio de frenos'})).taller[0];
+    await taller(id,'ingresar',{plan:preventiva.at, notes:'Entrada preventiva'});
+    const cot = await cotizar(35);
+    await asignar(cot,id,409);
+    await taller(id,'trabajo',{notes:'Ajustar frenos',result:'Listos',mechanic:'Ana'});
+    await taller(id,'liberar',{notes:'',mechanic:'Ana'},409);
+    const libre = unidad(await taller(id,'liberar',{notes:'Probado',mechanic:'Ana'}));
+    assert.equal(libre.state,'Disponible');
+    assert.equal(libre.taller[0].estado,'Terminado');
+    const reservar = async c => (await asignar(c,id)).data.rentals.find(r=>r.cotizacionId===c).id;
+    const r1 = await reservar(cot);
+    await mover(r1,'prepare',{mechanic:'Ana',notes:'Completo',result:'ready'});
+    await taller(id,'ingresar',{notes:'Revisar antes de entregar'});
+    await mover(r1,'deliver',{date:hoy,receiver:'Cliente'},409);
+    await taller(id,'trabajo',{notes:'Ajuste',result:'Completo',mechanic:'Ana'});
+    assert.equal(unidad(await taller(id,'liberar',{notes:'Revisado',mechanic:'Ana'})).state,'En preparación');
+    await mover(r1,'cancel',{notes:'Cliente canceló',confirm:'si'});
+    const r2 = await reservar(await cotizar(42));
+    await taller(id,'ingresar',{notes:'Equipo pendiente de reparación'});
+    const cancelada = await mover(r2,'cancel',{notes:'Cancelación con equipo en taller',confirm:'si'});
+    assert.equal(unidad(cancelada).state,'En mantenimiento');
+    await taller(id,'trabajo',{notes:'Reparación',result:'Funciona',mechanic:'Javier'});
+    const cierre = await taller(id,'liberar',{notes:'Revisado y libre',mechanic:'Javier'});
+    assert.equal(unidad(cierre).state,'Disponible');
+    assert.equal(cierre.data.rentals.filter(r=>r.unit===id && r.status==='Cancelada').length,2);
   });
   if (process.env.TEST_BROWSER_CHANNEL) await t.test('pantallas de cuentas, inicio, historial e inventario con datos reales', async t => {
     const { chromium, expect } = await import('../frontend/node_modules/@playwright/test/index.mjs');
@@ -189,6 +238,24 @@ test('recorrido del sprint 2 con cuentas reales y PostgreSQL', { skip: !process.
     await page.goto('/comercial/inicio');
     await expect(page.getByRole('link',{name:new RegExp('Entrega · EQ-AGENDA · ' + actual.id)})).toHaveAttribute('href','/comercial/rentas/'+actual.id);
     await expect(page.getByRole('link',{name:/Programado · EQ-PRUEBA/})).toHaveAttribute('href','/comercial/inventario/EQ-PRUEBA');
+    const panel = (await pedir('GET','/operacion',operador)).data;
+    const etapas = {
+      'por-asignar': panel.reservaciones.length,
+      preparacion: panel.rentals.filter(r => r.status === 'Apartado' || (r.status === 'En preparación' && !r.ready)).length,
+      listos: panel.rentals.filter(r => r.status === 'En preparación' && r.ready).length,
+      rentas: panel.rentals.filter(r => r.status === 'En renta').length,
+      revision: panel.rentals.filter(r => r.status === 'En revisión').length,
+      mantenimiento: panel.rentals.filter(r => r.status === 'En mantenimiento').length,
+    };
+    for (const [etapa,total] of Object.entries(etapas)) {
+      const destino = '/comercial/operacion/' + etapa;
+      const tarjeta = page.locator('.home-card').filter({has:page.locator('.home-count')}).and(page.locator('a[href="'+destino+'"]'));
+      await expect(tarjeta.locator('.home-count')).toHaveText(String(total));
+      await tarjeta.click();
+      await expect(page).toHaveURL(new URL(destino,new URL(base).origin).href);
+      if (!total) await expect(page.getByRole('heading',{name:/No hay/})).toBeVisible();
+      await page.getByRole('link',{name:'Inicio',exact:true}).click();
+    }
     const listos = page.getByRole('link').filter({has:page.getByRole('heading',{name:'Listos para entregar'})});
     await expect(listos.locator('.home-count')).toHaveText('1');
     await listos.click();
@@ -200,12 +267,25 @@ test('recorrido del sprint 2 con cuentas reales y PostgreSQL', { skip: !process.
     await page.getByRole('link',{name:'EQ-LIBRE'}).click();
     await expect(page.getByText('Sin rentas registradas')).toBeVisible();
     await expect(page.getByLabel('Movimiento',{exact:true})).toHaveCount(0);
-    await page.goBack();
+    await page.getByRole('link',{name:'Volver al inventario'}).click();
     await expect(page.getByRole('searchbox')).toHaveValue('eq-libre');
+    await page.getByRole('searchbox').fill('mÓnTacargas');
+    await expect(page.getByRole('link',{name:'EQ-LIBRE'})).toBeVisible();
     await page.getByRole('searchbox').fill('zzzz-inexistente');
     await expect(page.getByRole('heading',{name:'Sin coincidencias'})).toBeVisible();
+    await mover(actual.id,'deliver',{date:hoy,receiver:'Ana'});
+    await mover(actual.id,'issue',{date:hoy,notes:'Revisar cable',mechanic:'Ana'});
+    await page.goto('/comercial/inicio');
+    await expect(page.getByRole('link',{name:new RegExp('Regreso · EQ-AGENDA · ' + actual.id)})).toHaveAttribute('href','/comercial/rentas/'+actual.id);
+    await expect(page.getByRole('link',{name:/Falla · EQ-AGENDA · Revisar cable/})).toBeVisible();
+    await mover(actual.id,'review',{date:hoy,notes:'Cable reparado',mechanic:'Ana',issueId:'1',result:'Resuelta'});
+    await page.reload();
+    await expect(page.getByRole('heading',{name:'Fallas y taller (1)'})).toBeVisible();
+    await expect(page.getByRole('link',{name:/Falla · EQ-AGENDA · Revisar cable/})).toHaveCount(0);
     await page.goto('/comercial/historial');
-    await expect(page.getByText('El cliente pospuso el trabajo',{exact:false})).toBeVisible();
+    const cancelada = page.getByRole('row').filter({hasText:otra});
+    for (const dato of ['Cancelada','EQ-OTRA','El cliente pospuso el trabajo','operador']) await expect(cancelada).toContainText(dato);
+    await expect(page.getByRole('row').filter({hasText:renta})).toContainText('Cerrada');
     await page.goto('/comercial/rentas/'+renta);
     await page.getByRole('button',{name:'Documentos',exact:true}).click();
     await expect(page.getByRole('button',{name:'Cambiar foto'})).toHaveCount(0);

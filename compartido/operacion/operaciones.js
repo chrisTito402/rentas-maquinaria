@@ -44,7 +44,10 @@ export function applyOperation(data, id, action, fields = {}, autor = { by: 'Sin
       break;
     case 'issue':
     case 'review': {
-      if (action === 'issue') desde('En renta');
+      if (action === 'issue') {
+        desde('En renta');
+        if (renta.delivery?.date && fields.date < renta.delivery.date) throw new Error('La falla debe ocurrir a partir de la entrega.');
+      }
       if (!fechaTrabajo(fields.date) || fields.date > hoy()) throw new Error('Revisa la fecha de la falla o revisión.');
       exigir('mechanic', 'el nombre del mecánico');
       exigir('notes', 'la descripción');

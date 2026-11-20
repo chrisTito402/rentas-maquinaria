@@ -1,4 +1,4 @@
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { useState } from 'react';
 
 const buscar = v => String(v ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -10,10 +10,11 @@ const tonos = {
 };
 
 function Unidad({ unidad, pendiente = false }) {
+  const { search } = useLocation();
   const estado = pendiente && unidad.state === 'Disponible' ? 'Sin asignar' : unidad.state;
   return (
     <div className="catalog-meta">
-      <Link className="catalog-code" to={'/comercial/inventario/' + encodeURIComponent(unidad.id)}>{unidad.id}</Link>
+      <Link className="catalog-code" to={'/comercial/inventario/' + encodeURIComponent(unidad.id) + search}>{unidad.id}</Link>
       <span className={'badge ' + (tonos[estado] ?? 'muted')}><i />{estado}</span>
     </div>
   );
