@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../../api.js';
 import BotonAprobar from '../../componentes/BotonAprobar.jsx';
+import { useSesion } from '../../auth/Sesion.jsx';
 import IconoCheck from '../../componentes/IconoCheck.jsx';
 import { EstadoCotizacion } from './Cotizaciones.jsx';
 import ProximoSprint from '../../componentes/ProximoSprint.jsx';
@@ -17,6 +18,7 @@ const recibida = (iso) => new Date(iso).toLocaleDateString('es-MX', { day: '2-di
 
 export default function DetalleCotizacion() {
   const { id } = useParams();
+  const { usuario } = useSesion();
   const [cot, setCot] = useState(null);
   const [error, setError] = useState('');
   const [aprobadaAhora, setAprobadaAhora] = useState(false);
@@ -155,10 +157,14 @@ export default function DetalleCotizacion() {
               <div className="f-desglose__total"><span>Total</span><strong style={{ color: 'var(--f-texto)' }}>{dinero(cot.total)}</strong></div>
             </div>
           </section>
-          {cot.estado === 'Pendiente' && (
+          {/* Roles: solo el administrador aprueba; el auxiliar ve un aviso en lugar del botón */}
+          {cot.estado === 'Pendiente' && usuario?.rol === 'admin' && (
             <div className="detalle-acciones">
               <BotonAprobar key={cot.id} cotizacion={cot} onAprobada={(r) => { setCot((actual) => ({ ...actual, estado: r.estado })); setAprobadaAhora(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
             </div>
+          )}
+          {cot.estado === 'Pendiente' && usuario?.rol !== 'admin' && (
+            <p className="f-alerta detalle-solo-admin">Solo el administrador puede aprobar esta cotización.</p>
           )}
           <ProximoSprint hu="HU-07" kan="KAN-16" titulo="PDF y envío por WhatsApp">
             Generar la cotización formal en PDF y mandársela al cliente por WhatsApp.

@@ -6,6 +6,7 @@ import { api } from '../../api.js';
 import { dinero } from '@compartido/formato.js';
 import { ESTADOS, ORIGENES } from '@compartido/constantes.js';
 import './cotizaciones.css';
+import { useSesion } from '../../auth/Sesion.jsx';
 
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 const corta = (iso) => {
@@ -30,6 +31,8 @@ export function EstadoCotizacion({ valor }) {
 
 export default function Cotizaciones() {
   const navegar = useNavigate();
+  const { usuario } = useSesion();
+  const esAdmin = usuario?.rol === 'admin';
   const [busqueda, setBusqueda] = useState('');
   const [estado, setEstado] = useState('');
   const [origen, setOrigen] = useState('');
@@ -74,7 +77,7 @@ export default function Cotizaciones() {
         </div>
         <div className="comercial-encabezado__acciones">
           <Link className="f-btn f-btn--primario" to="/comercial/cotizaciones/nueva">+ Nueva cotización</Link>
-          <span className="comercial-perfil"><i>AD</i>Administrador</span>
+          <span className="comercial-perfil"><i>{esAdmin ? 'AD' : 'AU'}</i>{esAdmin ? 'Administrador' : 'Auxiliar comercial'}</span>
         </div>
       </header>
 

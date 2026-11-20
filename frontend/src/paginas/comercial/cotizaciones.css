@@ -14,6 +14,9 @@
 .bandeja__filtros .bandeja__origen select { min-height: 42px; padding: 8px 12px; font-size: 14px; }
 .bandeja__vacio .f-btn { margin-top: 14px; }
 
+/* Roles: aviso para el auxiliar en el detalle de una cotización Pendiente */
+.detalle-solo-admin { background: var(--f-sutil); color: var(--f-texto-2); text-align: center; }
+
 /* Estados que llegan con el Sprint 2 */
 .f-estado--rechazada { background: var(--f-error-fondo); color: var(--f-error); }
 .f-estado--aceptada { background: #eff6ff; color: #1d4ed8; }

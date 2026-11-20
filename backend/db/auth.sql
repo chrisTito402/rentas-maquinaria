@@ -12,3 +12,6 @@ CREATE TABLE IF NOT EXISTS auth_sesiones (
   vence_en TIMESTAMPTZ NOT NULL
 );
 CREATE INDEX IF NOT EXISTS auth_sesiones_vencimiento ON auth_sesiones(vence_en);
+-- Roles: el administrador aprueba y rechaza; el auxiliar consulta y captura cotizaciones.
+-- Las cuentas que ya existían quedan como administrador para no quitarles acceso.
+ALTER TABLE auth_usuarios ADD COLUMN IF NOT EXISTS rol VARCHAR(20) NOT NULL DEFAULT 'admin';
