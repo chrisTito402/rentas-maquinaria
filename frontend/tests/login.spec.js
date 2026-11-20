@@ -44,7 +44,7 @@ test('fallo de red conserva el usuario y permite reintentar; catálogo público 
   await page.getByRole('button', { name: 'Iniciar sesión', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText('No se pudo conectar');
   await expect(page.getByLabel('Usuario', { exact: true })).toHaveValue('operativa');
-  await page.getByRole('link', { name: 'Volver al catálogo' }).click();
+  await page.getByRole('link', { name: '← Ver catálogo de maquinaria en renta' }).click();
   await expect(page).toHaveURL(/\/$/);
 });
 

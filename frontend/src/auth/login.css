@@ -25,7 +25,8 @@
     .acceso-show:hover { background: var(--f-sutil); }
     .acceso-submit { width: 100%; border: 0; height: 48px; background: var(--f-accion); color: #431407; font-weight: 700; border-radius: var(--f-r-sm); cursor: pointer; }
     .acceso-submit:hover { background: #fb923c; }
-    .acceso-back { display: block; text-align: center; margin-top: 24px; font-size: 13px; font-weight: 600; }
+    .acceso-back { display: flex; align-items: center; justify-content: center; min-height: 48px; margin-top: 16px; border: 1px solid var(--f-borde-input, #cbd5e1); border-radius: 12px; font-size: 15px; font-weight: 700; color: var(--f-texto, #0f172a); text-decoration: none; }
+.acceso-back:hover { border-color: var(--f-accion, #f97316); color: var(--f-accion, #f97316); }
     .acceso-footer { text-align: center; padding: 20px; color: var(--f-texto-2); font-size: 12px; }
     @media (max-width: 480px) { .acceso-header { height: 82px; padding: 0 20px; } .acceso-brand strong { font-size: 16px; } .acceso-login { padding: 28px 24px; } .acceso-main { min-height: calc(100svh - 155px); padding: 32px 16px; } }
 

@@ -66,10 +66,19 @@ export default function MiCotizacion() {
     <section className="f-tarjeta confirmacion" role="status">
       <div className="confirmacion__icono"><IconoCheck /></div>
       <h1>¡Recibimos tu solicitud!</h1>
-      <p>Tu folio es <strong>{recibida.folio}</strong>. El área comercial la revisará y te enviará la cotización formal.</p>
-      <p className="f-alerta f-alerta--exito">Total: {dinero(recibida.total)} (incluye envío e IVA). Tu cotización está Pendiente de revisión.</p>
+      <p>Tu folio es <strong>{recibida.folio}</strong>. Guárdalo: con él puedes preguntar por tu cotización.</p>
+      <p className="f-alerta f-alerta--exito">Total estimado: {dinero(recibida.total)} (incluye envío e IVA). Tu solicitud está Pendiente de revisión.</p>
+      {/* Notas de la re-presentación del Sprint 1: más información del folio y qué sigue */}
+      <div className="confirmacion__pasos">
+        <strong>¿Qué sigue?</strong>
+        <ol>
+          <li>El área comercial revisa que los equipos estén disponibles en tus fechas.</li>
+          <li>Te contactamos por WhatsApp al {cliente.telefono} con la cotización formal.</li>
+          <li>Tú decides si la aceptas. Hasta entonces no hay cobro ni compromiso.</li>
+        </ol>
+      </div>
       <div className="confirmacion__acciones">
-        <Link className="f-btn f-btn--primario" to="/">Volver al catálogo</Link>
+        <Link className="f-btn f-btn--primario" to="/">Ir al catálogo de maquinaria</Link>
       </div>
     </section>
   );
@@ -82,7 +91,7 @@ export default function MiCotizacion() {
       <h1>Tu cotización está vacía</h1>
       <p>Agrega uno o varios equipos desde el catálogo para pedir tu cotización.</p>
       <div className="confirmacion__acciones">
-        <Link className="f-btn f-btn--primario" to="/">Ver catálogo</Link>
+        <Link className="f-btn f-btn--primario" to="/">Ver catálogo de maquinaria</Link>
       </div>
     </section>
   );
@@ -145,7 +154,12 @@ export default function MiCotizacion() {
           <button type="submit" form="form-solicitud" className="f-btn f-btn--primario f-btn--grande" disabled={enviando || fueraDeZona}>
             {enviando ? 'Enviando…' : 'Enviar solicitud de cotización →'}
           </button>
-          <p className="solicitud-nota">Esto no es un cobro. Tu solicitud queda pendiente de revisión.</p>
+          {/* Ajuste A2: cotizar no genera compromiso para el cliente ni para la empresa */}
+          <p className="solicitud-nota">
+            Pedir una cotización es gratis y no te compromete a nada: no se cobra ni se apartan equipos.
+            Tampoco obliga a la empresa: primero revisamos la disponibilidad y te enviamos la cotización formal.
+            Al enviar, verás tu folio en esta misma página.
+          </p>
         </aside>
       </div>
     </>

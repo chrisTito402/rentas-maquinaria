@@ -274,6 +274,10 @@ body:has(.sitio), body:has(.comercial) { margin: 0; background: var(--f-fondo); 
 .confirmacion p { font-size: 14px; line-height: 1.6; color: var(--f-texto-2); }
 .confirmacion .f-alerta--exito { width: 100%; font-size: 13px; color: var(--f-exito-texto); }
 .confirmacion__acciones { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 6px; }
+/* Qué sigue después de enviar la solicitud (notas de la re-presentación del Sprint 1) */
+.confirmacion__pasos { width: 100%; text-align: left; background: var(--f-sutil); border-radius: var(--f-r-md); padding: 14px 18px; font-size: 14px; }
+.confirmacion__pasos ol { margin: 8px 0 0; padding-left: 20px; color: var(--f-texto-2); line-height: 1.6; }
+.solicitud-nota { line-height: 1.5; }
 
 /* ---------- Panel comercial ---------- */
 .comercial { display: grid; grid-template-columns: 232px minmax(0, 1fr); }
