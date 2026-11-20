@@ -150,6 +150,13 @@ body:has(.sitio), body:has(.comercial) { margin: 0; background: var(--f-fondo); 
 .equipo-tarjeta:hover { box-shadow: var(--f-sombra-hover); transform: translateY(-4px); }
 .equipo-tarjeta__media { position: relative; height: 208px; background: var(--f-accion-suave); overflow: hidden; }
 .equipo-tarjeta__media .maquina { position: absolute; inset: 16px; }
+.equipo-tarjeta__media .maquina--foto { inset: 0; }
+.equipo-disponibilidad { display: inline-flex; align-items: center; width: fit-content; border-radius: 9999px; padding: 6px 10px; background: var(--f-exito-fondo); color: var(--f-exito-texto); font-size: 12px; line-height: 1.2; font-weight: 700; }
+.equipo-disponibilidad--no { background: var(--f-error-fondo); color: var(--f-error); }
+.equipo-tarjeta__media .equipo-disponibilidad { position: absolute; top: 12px; right: 12px; z-index: 2; box-shadow: var(--f-sombra); }
+.catalogo-creditos, .ficha-foto-creditos { color: var(--f-tenue); font-size: 12px; line-height: 1.5; }
+.catalogo-creditos { margin-bottom: 16px; }
+.catalogo-creditos a, .ficha-foto-creditos a { text-decoration: underline; }
 .equipo-tarjeta__body { display: flex; flex-direction: column; gap: 8px; padding: 20px; flex: 1; }
 .equipo-tarjeta__meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .equipo-tarjeta__codigo { font-size: 11px; font-weight: 700; color: var(--f-tenue); letter-spacing: .33px; }
@@ -170,6 +177,9 @@ body:has(.sitio), body:has(.comercial) { margin: 0; background: var(--f-fondo); 
 .maquina__polvo { position: absolute; z-index: 0; bottom: 10%; left: 18%; width: 64%; height: 10%; border-radius: 50%; background: radial-gradient(ellipse at center, rgba(249, 115, 22, .16), transparent 70%); animation: f-sombra 2.8s ease-in-out infinite; animation-delay: calc(var(--i, 0) * -0.45s); }
 .equipo-tarjeta:hover .maquina img, .ficha-imagen:hover .maquina img { animation: f-avanzar .9s ease-in-out infinite alternate; }
 .maquina--grande img { animation-duration: 3.4s; }
+.maquina--foto img { object-fit: cover; animation: none; }
+.maquina--foto .maquina__polvo { display: none; }
+.equipo-tarjeta:hover .maquina--foto img, .ficha-imagen:hover .maquina--foto img { animation: none; }
 .maquina__generica { position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--f-accion); font-weight: 700; font-size: 13px; letter-spacing: .3px; animation: f-ralenti 2.8s ease-in-out infinite; }
 .maquina__generica span { width: 72px; height: 72px; border-radius: 20px; background: var(--f-accion); display: grid; place-items: center; box-shadow: 0 10px 24px -10px rgba(249, 115, 22, .7); }
 .maquina__generica img { position: static; width: 38px; height: 30px; animation: none; }
@@ -187,8 +197,10 @@ body:has(.sitio), body:has(.comercial) { margin: 0; background: var(--f-fondo); 
 .ficha { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 24px; align-items: start; }
 .ficha-izquierda { display: flex; flex-direction: column; gap: 24px; }
 .ficha-imagen { padding: 24px; }
-.ficha-imagen__fondo { position: relative; height: 420px; border-radius: var(--f-r-md); background: var(--f-accion-suave); }
+.ficha-imagen__fondo { position: relative; height: 420px; border-radius: var(--f-r-md); background: var(--f-accion-suave); overflow: hidden; }
 .ficha-imagen__fondo .maquina { position: absolute; inset: 32px; }
+.ficha-imagen__fondo .maquina--foto { inset: 0; }
+.ficha-foto-creditos { margin-top: 10px; }
 .ficha-tecnica { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
 .ficha-tecnica__titulo { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .ficha-tecnica__titulo h2 { font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 12px; }

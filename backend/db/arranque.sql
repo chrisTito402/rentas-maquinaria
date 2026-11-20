@@ -62,3 +62,19 @@ CREATE TABLE IF NOT EXISTS operacion_rentas (
 -- Sprint 2: columnas nuevas para bases que ya existen (no borra datos).
 ALTER TABLE equipos      ADD COLUMN IF NOT EXISTS disponible BOOLEAN       NOT NULL DEFAULT TRUE;   -- HU-01b
 ALTER TABLE cotizaciones ADD COLUMN IF NOT EXISTS envio      NUMERIC(12,2) NOT NULL DEFAULT 0;      -- HU-13b
+
+-- HU-01b: solo sustituye las ilustraciones originales de la demo.
+-- No altera las fotos ni la disponibilidad que alguien actualice después.
+UPDATE equipos AS e
+   SET disponible = CASE WHEN e.modelo = 'Rodillo 10 t' AND e.foto = '/img/equipos/compactador.png'
+                         THEN FALSE ELSE e.disponible END,
+       foto = fotos.url
+  FROM (VALUES
+    ('/img/equipos/montacargas-toyota.png', 'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/55/Toyota_forklift_vehicle.jpg/960px-Toyota_forklift_vehicle.jpg'),
+    ('/img/equipos/excavadora.png', 'https://thumb.wikimedia.org/wikipedia/commons/thumb/3/39/ROCA_Caterpillar_320D_Excavator_Display_in_Chaiyi_Air_Force_Base_20120811a.jpg/960px-ROCA_Caterpillar_320D_Excavator_Display_in_Chaiyi_Air_Force_Base_20120811a.jpg'),
+    ('/img/equipos/retroexcavadora.png', 'https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3b/Deere_310L_-_Arlington%2C_MA.jpg/960px-Deere_310L_-_Arlington%2C_MA.jpg'),
+    ('/img/equipos/montacargas-electrico.png', 'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fb/Hyster_50XT_forklift_parked_in_downtown_Campbell.jpg/960px-Hyster_50XT_forklift_parked_in_downtown_Campbell.jpg'),
+    ('/img/equipos/minicargador.png', 'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Bobcat_S650_skid_steer_loader_%2815084521732%29.jpg/960px-Bobcat_S650_skid_steer_loader_%2815084521732%29.jpg'),
+    ('/img/equipos/compactador.png', 'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/62/Caterpillar_CB54B_roller_on_dirt_lot_in_Campbell.jpg/960px-Caterpillar_CB54B_roller_on_dirt_lot_in_Campbell.jpg')
+  ) AS fotos(local, url)
+ WHERE e.foto = fotos.local;

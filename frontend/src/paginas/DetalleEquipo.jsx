@@ -10,7 +10,6 @@ import DesgloseCostos from '../componentes/DesgloseCostos.jsx';
 import CalendarioRango from '../componentes/CalendarioRango.jsx';
 import ElegirMunicipio from '../componentes/ElegirMunicipio.jsx';
 import Maquina from '../componentes/Maquina.jsx';
-import ProximoSprint from '../componentes/ProximoSprint.jsx';
 import { imagenEquipo, partesCaracteristicas } from '../logica/imagenEquipo.js';
 import { MAX_CANTIDAD } from '@compartido/constantes.js';
 import { calcularEnvio, contarDias } from '@compartido/costos.js';
@@ -99,6 +98,7 @@ export default function DetalleEquipo() {
         <div className="ficha-izquierda">
           <section className="f-tarjeta ficha-imagen">
             <div className="ficha-imagen__fondo"><Maquina equipo={equipo} grande /></div>
+            <p className="ficha-foto-creditos">Imagen ilustrativa · <a href="/creditos-fotos.html">Créditos y licencias</a></p>
           </section>
           <section className="f-tarjeta ficha-tecnica" aria-labelledby="titulo-tecnica">
             <div className="ficha-tecnica__titulo">
@@ -114,13 +114,13 @@ export default function DetalleEquipo() {
               ))}
             </div>
           </section>
-          <ProximoSprint hu="HU-01b" kan="KAN-52" titulo="Fotos reales y disponibilidad" duenio="Héctor">
-            Aquí irán las fotos reales del equipo y cuántas unidades hay disponibles para rentar.
-          </ProximoSprint>
         </div>
 
         <aside className="f-tarjeta ficha-panel" aria-label="Agregar a mi cotización">
           <h1>{equipo.nombre}</h1>
+          <span className={`equipo-disponibilidad ficha-disponibilidad${equipo.disponible ? '' : ' equipo-disponibilidad--no'}`}>
+            {equipo.disponible ? 'Disponible' : 'No disponible'}
+          </span>
           <p className="ficha-precio">{dinero(equipo.tarifaDia).replace('.00', '')}<small>/ día + IVA</small></p>
 
           <div className="ficha-seccion-titulo">

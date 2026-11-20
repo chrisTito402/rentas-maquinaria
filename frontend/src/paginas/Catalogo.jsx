@@ -36,32 +36,38 @@ export default function Catalogo() {
           {equipos.length === 0 ? (
             <div className="f-tarjeta catalogo-vacio"><p>Todavía no hay equipos en el catálogo.</p></div>
           ) : (
-            <div className="catalogo-rejilla">
-              {equipos.map((equipo, indice) => (
-                <Link className="equipo-tarjeta" to={`/equipos/${equipo.id}`} key={equipo.id} style={{ '--i': indice }}>
-                  <div className="equipo-tarjeta__media">
-                    <Maquina equipo={equipo} indice={indice} />
-                  </div>
-                  <div className="equipo-tarjeta__body">
-                    <div className="equipo-tarjeta__meta">
-                      <span className="f-chip f-chip--sutil">{equipo.tipo}</span>
-                      <span className="equipo-tarjeta__codigo">{equipo.modelo}</span>
+            <>
+              <p className="catalogo-creditos">Fotografías ilustrativas · <a href="/creditos-fotos.html">Créditos y licencias</a></p>
+              <div className="catalogo-rejilla">
+                {equipos.map((equipo, indice) => (
+                  <Link className="equipo-tarjeta" to={`/equipos/${equipo.id}`} key={equipo.id} style={{ '--i': indice }}>
+                    <div className="equipo-tarjeta__media">
+                      <Maquina equipo={equipo} indice={indice} />
+                      <span className={`equipo-disponibilidad${equipo.disponible ? '' : ' equipo-disponibilidad--no'}`}>
+                        {equipo.disponible ? 'Disponible' : 'No disponible'}
+                      </span>
                     </div>
-                    <h2>{equipo.nombre}</h2>
-                    {equipo.caracteristicas && (
-                      <p className="equipo-tarjeta__specs">{partesCaracteristicas(equipo.caracteristicas).slice(0, 2).join(' · ')}</p>
-                    )}
-                    <div className="equipo-tarjeta__pie">
-                      <div>
-                        <span className="equipo-precio">{dinero(equipo.tarifaDia).replace('.00', '')}<small>/ día</small></span>
-                        <span className="equipo-precio__nota">+ IVA</span>
+                    <div className="equipo-tarjeta__body">
+                      <div className="equipo-tarjeta__meta">
+                        <span className="f-chip f-chip--sutil">{equipo.tipo}</span>
+                        <span className="equipo-tarjeta__codigo">{equipo.modelo}</span>
                       </div>
-                      <span className="equipo-tarjeta__accion">Ver fechas <img src="/img/iconos/flecha-derecha.svg" alt="" /></span>
+                      <h2>{equipo.nombre}</h2>
+                      {equipo.caracteristicas && (
+                        <p className="equipo-tarjeta__specs">{partesCaracteristicas(equipo.caracteristicas).slice(0, 2).join(' · ')}</p>
+                      )}
+                      <div className="equipo-tarjeta__pie">
+                        <div>
+                          <span className="equipo-precio">{dinero(equipo.tarifaDia).replace('.00', '')}<small>/ día</small></span>
+                          <span className="equipo-precio__nota">+ IVA</span>
+                        </div>
+                        <span className="equipo-tarjeta__accion">Ver fechas <img src="/img/iconos/flecha-derecha.svg" alt="" /></span>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                  </Link>
+                ))}
+              </div>
+            </>
           )}
         </>
       )}
