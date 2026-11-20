@@ -1,10 +1,12 @@
+import { trabajoAbierto, rentaVigente, fechaTrabajo } from './taller.js';
+
 // Transiciones operativas de Delivery 1.
 export const STATES = ['Disponible', 'Apartado', 'En preparación', 'En renta', 'En revisión', 'En mantenimiento', 'Fuera de servicio'];
 export const INVENTORY = ['Torreta', 'Extintor', 'Espejo', 'Focos delanteros', 'Focos traseros', 'Tanque de gas', 'Alarma de reversa', 'Dos cuchillas'];
 
 const hoy = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Hermosillo' });
 
-export function applyOperation(data, id, action, fields = {}) {
+export function applyOperation(data, id, action, fields = {}, autor = { by: 'Sin cuenta' }) {
   const next = structuredClone(data);
   const renta = next.rentals.find(item => item.id === id);
   if (!renta) throw new Error('No se encontró la renta.');
@@ -23,7 +25,44 @@ export function applyOperation(data, id, action, fields = {}) {
     if (!estados.includes(renta.status)) throw new Error('La operación no está disponible en el estado actual.');
   }
 
+  if (trabajoAbierto(unidad) && ['prepare', 'deliver', 'close'].includes(action)) {
+    throw new Error('Termina el trabajo de taller antes de continuar.');
+  }
+  if (renta.status === 'Cancelada') throw new Error('Este apartado ya está cancelado.');
   switch (action) {
+    case 'cancel':
+      desde('Apartado', 'En preparación', 'En mantenimiento');
+      exigir('notes', 'el motivo de cancelación');
+      if (fields.confirm !== 'si') throw new Error('Confirma que deseas cancelar este apartado.');
+      renta.cancelacion = { motivo: fields.notes.trim(), at, ...autor };
+      renta.status = 'Cancelada';
+      renta.ready = false;
+      if (unidad.state !== 'En mantenimiento' && unidad.state !== 'Fuera de servicio') {
+        unidad.state = next.rentals.find(r => r.unit === unidad.id && rentaVigente(r))?.status ?? 'Disponible';
+      }
+      mensaje = 'Apartado cancelado · ' + renta.cancelacion.motivo;
+      break;
+    case 'issue':
+    case 'review': {
+      if (action === 'issue') desde('En renta');
+      if (!fechaTrabajo(fields.date) || fields.date > hoy()) throw new Error('Revisa la fecha de la falla o revisión.');
+      exigir('mechanic', 'el nombre del mecánico');
+      exigir('notes', 'la descripción');
+      const registro = { fecha: fields.date, detalle: fields.notes.trim(), mecanico: fields.mechanic.trim(), at, ...autor };
+      const fallas = renta.issues ??= [];
+      if (action === 'issue') {
+        fallas.push({ ...registro, id: String(fallas.length + 1), estado: 'Pendiente', revisiones: [] });
+        mensaje = 'Falla reportada · ' + registro.detalle;
+      } else {
+        const falla = fallas.find(f => f.id === fields.issueId && f.estado === 'Pendiente');
+        if (!falla || !['Pendiente', 'Resuelta', 'Taller'].includes(fields.result) ||
+            fields.date < (falla.revisiones.at(-1)?.fecha ?? falla.fecha)) throw new Error('Revisa la falla, su fecha y el resultado.');
+        falla.revisiones.push({ ...registro, resultado: fields.result });
+        falla.estado = fields.result;
+        mensaje = 'Revisión de falla · ' + fields.result;
+      }
+      break;
+    }
     case 'prepare':
       desde('Apartado', 'En preparación', 'En mantenimiento');
       exigir('mechanic', 'quién revisó el equipo');
@@ -81,7 +120,8 @@ export function applyOperation(data, id, action, fields = {}) {
         throw new Error('La devolución no puede ser anterior a la entrega.');
       }
       renta.return = { ...fields, at };
-      renta.status = unidad.state = 'En revisión';
+      renta.status = 'En revisión';
+      if (!trabajoAbierto(unidad)) unidad.state = 'En revisión';
       mensaje = 'Devolución registrada. Equipo en revisión';
       break;
     case 'close':
@@ -93,6 +133,7 @@ export function applyOperation(data, id, action, fields = {}) {
       }
       if (fields.result === 'Fuera de servicio') exigir('authorization', 'quién autorizó el estado');
       renta.finalReview = { ...fields };
+      if (fields.result === 'Disponible' && renta.issues?.some(i => ['Taller', 'Pendiente'].includes(i.estado))) throw new Error('Revisa las fallas abiertas antes de liberar la unidad.');
       unidad.state = fields.result;
       renta.status = 'Cerrada';
       mensaje = 'Revisión final registrada. Equipo ' + unidad.state.toLowerCase();
@@ -105,7 +146,7 @@ export function applyOperation(data, id, action, fields = {}) {
     unidad.stateChangedAt = at;
     if (unidad.state === 'En mantenimiento') unidad.maintenanceStartedAt = at;
   }
-  renta.events.push({ at, text: mensaje, by: 'Administrador' });
+  renta.events.push({ at, text: mensaje, ...autor });
   return next;
 }
 

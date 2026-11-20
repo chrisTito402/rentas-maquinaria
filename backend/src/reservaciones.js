@@ -1,3 +1,4 @@
+import { rentaVigente, chocaPreventivo } from '../../compartido/operacion/taller.js';
 import { errorHttp } from './errores.js';
 import { nuevaUnidad } from './catalogo.js';
 import { coincideModelo } from '../../compartido/operacion/catalogo.js';
@@ -28,7 +29,7 @@ export async function cotizacionesAprobadas(db, id = null) {
 
 export const normalizarUnidad = valor => String(valor ?? '').trim().toUpperCase();
 
-export function asignarUnidades(data, cotizacion, identificadores) {
+export function asignarUnidades(data, cotizacion, identificadores, autor = { by: 'Sin cuenta' }) {
   const lineas = cotizacion.lineas.flatMap(linea => Array(linea.cantidad).fill(linea));
   if (!lineas.length || identificadores.length !== lineas.length) {
     throw errorHttp(400, 'Indica una unidad física por cada equipo cotizado.');
@@ -39,7 +40,7 @@ export function asignarUnidades(data, cotizacion, identificadores) {
   }
 
   const units = new Map(data.units.map(unidad => [normalizarUnidad(unidad.id), unidad]));
-  const ocupadas = new Set(data.rentals.filter(renta => renta.status !== 'Cerrada').map(renta => renta.unit));
+  const ocupadas = new Set(data.rentals.filter(rentaVigente).map(renta => renta.unit));
   const at = new Date().toISOString();
   let numero = data.rentals.reduce((maximo, renta) =>
     Math.max(maximo, Number(renta.id.match(/^R-(\d+)$/)?.[1] ?? 0)), 0);
@@ -48,7 +49,7 @@ export function asignarUnidades(data, cotizacion, identificadores) {
     const id = ids[indice];
     const existente = units.get(id);
     const equipo = { id: linea.equipoId, nombre: linea.equipo, modelo: linea.modelo, tipo: linea.tipo };
-    if (existente && (!coincideModelo(existente, equipo) || existente.state !== 'Disponible' || ocupadas.has(existente.id))) {
+    if (existente && (chocaPreventivo(existente, linea.inicio, linea.fin) || !coincideModelo(existente, equipo) || existente.state !== 'Disponible' || ocupadas.has(existente.id))) {
       throw errorHttp(409, `La unidad ${id} debe estar disponible y corresponder a ${linea.equipo}.`);
     }
     const unidad = existente ?? nuevaUnidad(equipo, id);
@@ -60,7 +61,7 @@ export function asignarUnidades(data, cotizacion, identificadores) {
       email: cliente.correo, address: cliente.direccion, site: cliente.municipio,
       start: linea.inicio, end: linea.fin, status: 'Apartado', ready: false,
       issues: [], reviews: [],
-      events: [{ at, text: `Apartado recibido de Comercial (${cotizacion.folio})`, by: 'Administrador' }],
+      events: [{ at, text: `Apartado recibido de Comercial (${cotizacion.folio})`, ...autor }],
     };
   });
   return { units: [...units.values()], rentals: [...data.rentals, ...nuevas] };

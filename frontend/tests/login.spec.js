@@ -10,7 +10,7 @@ test('diseño aprobado, error recuperable, destino privado y cierre de sesión',
       activa = true;
     }
     if (ruta === '/api/auth/logout') activa = false;
-    if (ruta === '/api/auth/sesion' || ruta === '/api/auth/login') return route.fulfill({ status: activa ? 200 : 401, json: activa ? { usuario: { id: 1, nombre: 'operativa' } } : { error: 'Inicia sesión.' } });
+    if (ruta === '/api/auth/sesion' || ruta === '/api/auth/login') return route.fulfill({ status: activa ? 200 : 401, json: activa ? { usuario: { id: 1, nombre: 'operativa', rol: 'operador' } } : { error: 'Inicia sesión.' } });
     if (ruta === '/api/auth/logout') return route.fulfill({ json: { ok: true } });
     return route.fulfill({ json: { units: [], rentals: [], reservaciones: [], catalogo: [] } });
   });
@@ -60,7 +60,7 @@ test('HU-16 · sin sesión manda a login; con sesión filtra por estado y origen
     const url = new URL(route.request().url());
     if (url.pathname === '/api/auth/login') activa = true;
     if (url.pathname === '/api/auth/sesion' || url.pathname === '/api/auth/login') {
-      return route.fulfill({ status: activa ? 200 : 401, json: activa ? { usuario: { id: 1, nombre: 'admin' } } : { error: 'Inicia sesión.' } });
+      return route.fulfill({ status: activa ? 200 : 401, json: activa ? { usuario: { id: 1, nombre: 'admin', rol: 'admin' } } : { error: 'Inicia sesión.' } });
     }
     if (url.pathname === '/api/cotizaciones') {
       const estado = url.searchParams.get('estado');

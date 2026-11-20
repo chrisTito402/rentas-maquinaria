@@ -3,6 +3,7 @@
 // HU-16: sesión del personal validada en el servidor.
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { perfiles } from '@compartido/perfiles.js';
 import { useSesion } from '../../auth/Sesion.jsx';
 import '../operacion/operacion.css';
 import '../../componentes/gestion.css';
@@ -36,10 +37,11 @@ export default function PanelLayout() {
           <NavLink to="/comercial/operacion" className={operacion ? 'active' : undefined} aria-current={operacion ? 'page' : undefined}>Operación</NavLink>
           <NavLink to="/comercial/inventario">Inventario</NavLink>
           <NavLink to="/comercial/historial">Historial</NavLink>
+          {usuario.rol === 'admin' && <NavLink to="/comercial/cuentas">Cuentas del equipo</NavLink>}
         </nav>
         <div className="comercial-menu__perfil">
           <strong>{usuario.nombre}</strong>
-          <span>{usuario.rol === 'admin' ? 'Administrador' : 'Auxiliar comercial'}</span>
+          <span>{perfiles[usuario.rol]}</span>
           <button type="button" className="acceso-salir" onClick={cerrarSesion} disabled={cerrando}>{cerrando ? 'Cerrando sesión…' : 'Cerrar sesión'}</button>
           {error && <p role="alert">{error}</p>}
           <Link to="/">Ver catálogo público ↗</Link>

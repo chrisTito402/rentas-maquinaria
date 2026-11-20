@@ -1,6 +1,9 @@
 import { Router } from 'express';
+import { soloOperaciones } from '../auth/roles.js';
+import { descifrarUsuario } from '../auth/credenciales.js';
+import { validarFoto } from '../foto.js';
 import { errorHttp } from '../errores.js';
-import { cargarOperacion, crearApartado, registrarOperacion, registrarUnidad } from '../operacion.js';
+import { cargarOperacion, crearApartado, registrarOperacion, registrarTaller, registrarUnidad } from '../operacion.js';
 
 const r = Router();
 const esObjeto = value => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -11,6 +14,9 @@ r.get('/', async (req, res) => {
   res.set('Cache-Control', 'no-store').json(await cargarOperacion());
 });
 
+const autor = req => ({ by: descifrarUsuario(req.usuario.usuario_cifrado), usuarioId: req.usuario.id });
+r.use(soloOperaciones);
+
 r.post('/acciones', async (req, res) => {
   const { id, accion, campos } = req.body ?? {};
   if (typeof id !== 'string' || typeof accion !== 'string' || !esObjeto(campos)
@@ -20,7 +26,8 @@ r.post('/acciones', async (req, res) => {
     })) {
     throw errorHttp(400, 'La renta, la acción o los datos del formulario no son válidos.');
   }
-  res.json(await registrarOperacion(id, accion, campos));
+  if (accion === 'photo') await validarFoto(campos.image);
+  res.json(await registrarOperacion(id, accion, campos, autor(req)));
 });
 
 r.post('/reservaciones/:id/asignar', async (req, res) => {
@@ -30,7 +37,13 @@ r.post('/reservaciones/:id/asignar', async (req, res) => {
     || !Array.isArray(unidades) || unidades.some(unidad => typeof unidad !== 'string')) {
     throw errorHttp(400, 'La cotización o los identificadores no son válidos.');
   }
-  res.json(await crearApartado(id, unidades));
+  res.json(await crearApartado(id, unidades, autor(req)));
+});
+
+r.post('/unidades/:id/taller', async (req, res) => {
+  const { accion, campos } = req.body ?? {};
+  if (!esObjeto(campos) || Object.values(campos).some(v => typeof v !== 'string')) throw errorHttp(400, 'Revisa los datos del taller.');
+  res.json(await registrarTaller(req.params.id, accion, campos, autor(req)));
 });
 
 r.post('/equipos/:id/unidades', async (req, res) => {

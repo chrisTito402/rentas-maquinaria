@@ -1,5 +1,7 @@
 # Resultados y retroalimentación de Operativa
 
+Corte original del 19 de noviembre. La [verificación del 20 de noviembre](evidencias/cierre/README.md) reúne las correcciones y las pruebas posteriores.
+
 ## Ejecución documentada
 
 **Fecha local:** 19 de noviembre de 2026, 21:33:39–21:33:50, America/Hermosillo.

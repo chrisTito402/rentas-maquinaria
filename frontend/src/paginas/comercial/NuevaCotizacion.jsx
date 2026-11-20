@@ -1,7 +1,9 @@
 // Dueño: Katia · HU-05 Crear cotización desde el panel (KAN-13)
 // Diseño: frames «4 · Nueva cotización (panel)» y «4b · Nueva cotización: elegir fechas» del Figma.
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useSesion } from '../../auth/Sesion.jsx';
+import { puedeCapturarCotizacion } from '@compartido/perfiles.js';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { api } from '../../api.js';
 import FormularioCliente from '../../componentes/FormularioCliente.jsx';
 import DesgloseCostos from '../../componentes/DesgloseCostos.jsx';
@@ -25,6 +27,11 @@ function textoFechas(inicio, fin) {
 }
 
 export default function NuevaCotizacion() {
+  const { usuario } = useSesion();
+  return puedeCapturarCotizacion(usuario.rol) ? <Formulario /> : <Navigate to="/comercial/cotizaciones" replace />;
+}
+
+function Formulario() {
   const navegar = useNavigate();
   const [equipos, setEquipos] = useState([]);
   const [lineas, setLineas] = useState([{ ...LINEA_NUEVA }]);

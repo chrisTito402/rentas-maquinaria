@@ -1,17 +1,24 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, NavLink, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
+import FichaUnidad from '../../componentes/operacion/FichaUnidad.jsx';
+import PendientesEquipo from '../../componentes/operacion/PendientesEquipo.jsx';
+import { api } from '../../api.js';
 import EquipmentCatalog from '../../componentes/operacion/EquipmentCatalog.jsx';
 import ReservacionesComerciales from '../../componentes/operacion/ReservacionesComerciales.jsx';
 import { Modal, RentalSummary, RentalActions, RentalDocuments } from './Operacion.jsx';
 import { cargarOperacion, asignarReservacion, registrarOperacion, registrarUnidad } from '../../servicios/operacion.js';
+import { useSesion } from '../../auth/Sesion.jsx';
+import { puedeOperar } from '@compartido/perfiles.js';
 import { etapas, rentasEnEtapa, etapaRenta } from '../../logica/flujo.js';
 
 const fecha = value => value ? new Date(value + 'T12:00:00').toLocaleDateString('es-MX') : 'Sin registrar';
 const normalizar = value => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
 export default function FlujoOperacion({ vista }) {
-  const { seccion, rentaId } = useParams();
+  const { usuario } = useSesion();
+  const edita = puedeOperar(usuario.rol);
+  const { seccion, rentaId, unidadId } = useParams();
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const page = vista || seccion;
@@ -67,13 +74,17 @@ export default function FlujoOperacion({ vista }) {
     rentas: next.rentals.filter(r => r.cotizacionId === id),
   }));
   const registrar = (id, unidad) => guardar(() => registrarUnidad(id, unidad), () => ({ titulo: 'Unidad registrada', texto: 'Ya puedes consultarla en el inventario o asignarla a una cotización aprobada.' }));
+  const taller = (id, accion, campos) => guardar(
+    () => api.post('/operacion/unidades/' + encodeURIComponent(id) + '/taller', { accion, campos }),
+    () => ({ titulo: 'Movimiento guardado', texto: 'Puedes verlo en el historial de taller.' }),
+  );
   const operar = async (accion, campos) => {
     try {
       await guardar(() => registrarOperacion(rentaId, accion, campos), next => ({ titulo: 'Cambio guardado', texto: next.rentals.find(r => r.id === rentaId).events.at(-1).text + '. Puedes revisar el resumen antes de continuar.' }));
     } catch (fallo) { setError(fallo.message); }
   };
 
-  if (!['inicio', 'detalle', 'equipos', 'historial', ...etapas.map(e => e.id)].includes(page)) return <Navigate to="/comercial/operacion/por-asignar" replace />;
+  if (!['inicio', 'detalle', 'unidad', 'equipos', 'historial', ...etapas.map(e => e.id)].includes(page)) return <Navigate to="/comercial/operacion/por-asignar" replace />;
   const rental = data?.rentals.find(r => r.id === rentaId);
   const unit = rental && data.units.find(u => u.id === rental.unit);
   const pendientes = data?.reservaciones ?? [];
@@ -98,7 +109,7 @@ export default function FlujoOperacion({ vista }) {
         <div className="table-scroll"><table className="gestion-table"><thead><tr><th>Equipo y unidad</th><th>Cliente / Cotización</th><th>Periodo previsto</th><th>Etapa</th><th><span className="sr-only">Acciones</span></th></tr></thead><tbody>
           {items.slice((actual - 1) * 8, actual * 8).map(r => <tr key={r.id}>
             <td><strong>{data.units.find(u => u.id === r.unit)?.name || r.unit}</strong><small>{r.unit} · {r.id}</small></td>
-            <td>{r.client}<small>{r.commercial}</small></td><td>{fecha(r.start)}<small>al {fecha(r.end)}</small></td><td>{etapaRenta(r).titulo}</td>
+            <td>{r.client}<small>{r.commercial}</small></td><td>{fecha(r.start)}<small>al {fecha(r.end)}</small></td><td>{etapaRenta(r).titulo}{r.cancelacion && <small>{r.cancelacion.motivo} · {r.cancelacion.by} · {new Date(r.cancelacion.at).toLocaleDateString('es-MX')}</small>}</td>
             <td><button className="button soft compact" onClick={() => abrir(r.id)}>Ver detalle →</button></td>
           </tr>)}
         </tbody></table></div>
@@ -115,19 +126,22 @@ export default function FlujoOperacion({ vista }) {
         <div className="page-heading"><div><p className="eyebrow">TU ESPACIO DE TRABAJO</p><h1>Una renta, paso a paso</h1><p className="section-intro">Empieza por una cotización o retoma una operación pendiente. Cada equipo muestra qué sigue.</p></div></div>
         <ol className="workflow-steps" aria-label="Recorrido de una renta">{['Revisar cotización', 'Asignar unidades', 'Preparar y entregar', 'Registrar regreso', 'Revisar y cerrar'].map((s, i) => <li key={s}><span>PASO {i + 1}</span>{s}</li>)}</ol>
         <div className="home-grid">
-          <Link className="home-card" to="/comercial/cotizaciones"><span>COMERCIAL</span><h2>Revisar cotizaciones</h2><p>Consulta las solicitudes del cliente y aprueba las que pasarán a Operación.</p><strong>Ir a cotizaciones →</strong></Link>
+          <Link className="home-card" to="/comercial/cotizaciones"><span>COMERCIAL</span><h2>Revisar cotizaciones</h2><p>{usuario.rol === 'admin' ? 'Consulta las solicitudes del cliente y aprueba las que pasarán a Operación.' : 'Consulta el folio, los equipos y el estado de cada solicitud.'}</p><strong>Ir a cotizaciones →</strong></Link>
           {etapas.map(e => <Link key={e.id} className="home-card" to={'/comercial/operacion/' + e.id}><span className="home-count">{e.id === 'por-asignar' ? pendientes.length : rentasEnEtapa(data, e.id).length}</span><h2>{e.titulo}</h2><p>{e.descripcion}</p><strong>{e.id === 'por-asignar' ? 'Ver cotizaciones' : 'Ver equipos'} →</strong></Link>)}
         </div>
-      </> : page === 'equipos' ? <EquipmentCatalog units={data.units} catalogo={data.catalogo ?? []} reservaciones={pendientes} rentals={data.rentals} onRegister={registrar} />
+        <PendientesEquipo data={data} />
+      </> : page === 'unidad' ? <FichaUnidad key={unidadId} unidad={data.units.find(u => u.id === unidadId)} rentas={data.rentals.filter(r => r.unit === unidadId)} guardar={edita ? taller : null} />
+        : page === 'equipos' ? <EquipmentCatalog units={data.units} catalogo={data.catalogo ?? []} reservaciones={pendientes} rentals={data.rentals} onRegister={edita ? registrar : null} />
         : page === 'historial' ? <><h1>Historial de rentas</h1><p className="section-intro">Consulta las rentas cerradas y los movimientos de cada unidad.</p>{listado('historial')}</>
         : page === 'detalle' ? !rental || !unit ? <section className="panel"><h1>No encontramos esta renta</h1><Link to="/comercial/operacion">Volver a Operación</Link></section> : <>
-          <div className="breadcrumbs"><Link to={rental.status === 'Cerrada' ? '/comercial/historial' : '/comercial/operacion/' + etapaRenta(rental).id}>← Volver a {etapaRenta(rental).titulo.toLowerCase()}</Link><span>{rental.id} · {rental.commercial}</span></div>
+          <div className="breadcrumbs"><Link to={['Cancelada', 'Cerrada'].includes(rental.status) ? '/comercial/historial' : '/comercial/operacion/' + etapaRenta(rental).id}>← Volver a {etapaRenta(rental).titulo.toLowerCase()}</Link><span>{rental.id} · {rental.commercial}</span></div>
           <div className="page-heading"><div><p className="eyebrow">{etapaRenta(rental).titulo}</p><h1>{unit.name}</h1><p>{rental.client} · Unidad {unit.id}</p></div></div>
-          <Progreso rental={rental} />
+          {rental.cancelacion ? <section className="flow-notice"><h2>Apartado cancelado</h2><p>{rental.cancelacion.motivo} · {rental.cancelacion.by} · {new Date(rental.cancelacion.at).toLocaleDateString('es-MX')}</p></section> : <Progreso rental={rental} />}
+          <Link to={'/comercial/inventario/' + encodeURIComponent(unit.id)}>Ver ficha de la unidad</Link>
           {rental.cotizacionId && <div className="related-rentals"><Link to={'/comercial/cotizaciones/' + rental.cotizacionId}>Ver cotización {rental.commercial}</Link>{data.rentals.filter(r => r.cotizacionId === rental.cotizacionId && r.id !== rental.id).map(r => <Link key={r.id} to={'/comercial/rentas/' + r.id}>{r.unit} · {etapaRenta(r).titulo}</Link>)}</div>}
           <div className="tabs"><button className={tab === 'resumen' ? 'selected' : ''} onClick={() => setTab('resumen')}>Resumen</button><button className={tab === 'documentos' ? 'selected' : ''} onClick={() => setTab('documentos')}>Documentos</button><button className={tab === 'movimientos' ? 'selected' : ''} onClick={() => setTab('movimientos')}>Movimientos</button></div>
-          {tab === 'resumen' ? <><RentalSummary rental={rental} unit={unit} /><RentalActions rental={rental} unit={unit} onAction={action => { setError(''); setModal(action); }} /></>
-            : tab === 'documentos' ? <RentalDocuments rental={rental} onAction={action => { setError(''); setModal(action); }} />
+          {tab === 'resumen' ? <><RentalSummary rental={rental} unit={unit} />{edita && rental.status !== 'Cancelada' && <RentalActions rental={rental} unit={unit} onAction={action => { setError(''); setModal(action); }} />}</>
+            : tab === 'documentos' ? <RentalDocuments edita={edita && rental.status !== 'Cancelada'} rental={rental} onAction={action => { setError(''); setModal(action); }} />
               : <section className="panel"><h2>Movimientos de esta unidad</h2><ol className="timeline">{[...rental.events].reverse().map((ev, i) => <li key={i}><span className="timeline-dot" /><div><strong>{ev.text}</strong><small>{new Date(ev.at).toLocaleString('es-MX')} · {ev.by}</small></div></li>)}</ol></section>}
         </> : <>
           <div className="operation-header"><h1>Operación</h1><p className="section-intro">Elige una etapa y abre un registro para revisar su siguiente paso.</p></div>
@@ -136,7 +150,7 @@ export default function FlujoOperacion({ vista }) {
           {page === 'por-asignar' ? <>
             {foco && !confirmacion?.rentas && !pendientes.some(c => String(c.id) === foco) && <section className="flow-notice"><h2>{data.rentals.some(r => String(r.cotizacionId) === foco) ? 'Esta cotización ya tiene unidades asignadas' : 'La cotización no está pendiente de asignación'}</h2><p>Puedes revisar su detalle y continuar desde ahí.</p><Link to={'/comercial/cotizaciones/' + encodeURIComponent(foco)}>Ver cotización →</Link></section>}
             <div className="list-toolbar"><label>Buscar cotización o cliente<input type="search" value={query} onChange={e => setQuery(e.target.value)} /></label></div>
-            <ReservacionesComerciales reservaciones={pendientes.filter(c => normalizar([c.folio, c.cliente.nombre, ...c.lineas.map(l => l.equipo)].join(' ')).includes(normalizar(query)))} onAssign={asignar} units={data.units} foco={foco} />
+            <ReservacionesComerciales reservaciones={pendientes.filter(c => normalizar([c.folio, c.cliente.nombre, ...c.lineas.map(l => l.equipo)].join(' ')).includes(normalizar(query)))} onAssign={edita ? asignar : null} units={data.units} foco={foco} />
           </> : listado(page)}
         </>}
       {modal && rental && createPortal(<div className="operacion gestion"><Modal kind={modal} rental={rental} unit={unit} error={error} busy={guardando} onClose={() => { if (!escritura.current) { setModal(null); setError(''); } }} onSubmit={operar} /></div>, document.body)}

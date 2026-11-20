@@ -10,6 +10,8 @@ import operacion from './rutas/operacion.rutas.js';
 import ocupadas from './rutas/ocupadas.rutas.js';   // HU-02a · Chris
 import panel from './rutas/panel.rutas.js';         // HU-05  · Katia
 import pdf from './rutas/pdf.rutas.js';             // HU-07  · Héctor
+import cuentas from './auth/cuentas.js';
+import { accesoComercial, soloAdmin } from './auth/roles.js';
 import { crearRutasAuth } from './auth/rutas.js';
 import { comprobarOrigen, protegerSesion } from './auth/sesion.js';
 
@@ -18,6 +20,7 @@ app.disable('x-powered-by');
 if (process.env.NODE_ENV === 'production') app.set('trust proxy', 1);
 app.use('/api/operacion', comprobarOrigen, protegerSesion(), express.json({ limit: '1200kb' }), operacion);
 app.use(express.json());
+app.use('/api/cuentas', comprobarOrigen, protegerSesion(), soloAdmin, cuentas);
 app.use('/api/auth', crearRutasAuth());
 
 app.get('/api/salud', async (req, res) => {
@@ -27,7 +30,7 @@ app.get('/api/salud', async (req, res) => {
 
 app.use('/api/equipos', ocupadas, equipos);
 // /web es pública; todo lo que va después de protegerSesion() pide haber iniciado sesión.
-app.use('/api/cotizaciones', solicitudes, comprobarOrigen, protegerSesion(), panel, pdf, aprobaciones, consultas);
+app.use('/api/cotizaciones', solicitudes, comprobarOrigen, protegerSesion(), accesoComercial, panel, pdf, aprobaciones, consultas);
 
 // Las rutas de la API nunca deben devolver la página de React.
 app.use('/api', (req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));

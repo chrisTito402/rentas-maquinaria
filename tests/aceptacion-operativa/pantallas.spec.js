@@ -38,6 +38,9 @@ test('OP-08 | generar y visualizar carta responsiva en modo impresión', async (
   await page.getByRole('button', { name: 'Generar responsiva', exact: true }).click();
   await page.getByRole('button', { name: 'Ver documento', exact: false }).click();
   await page.emulateMedia({ media: 'print' });
+  await expect(page.locator('.comercial-menu')).toBeHidden();
+  await expect(page.locator('.document-toolbar')).toBeHidden();
+  await expect(page.locator('.flow-notice')).toBeHidden();
   await expect(page.locator('.responsiva')).toBeVisible();
   expect(mock.estado().rentals[0].document.brand).toBe('Marca');
   expect(mock.estado().rentals[0].document.serial).toBe('S-1');

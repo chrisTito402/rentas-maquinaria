@@ -8,6 +8,7 @@ export const etapas = [
 ];
 
 export function etapaRenta(renta) {
+  if (renta.status === 'Cancelada') return { id: 'historial', titulo: 'Cancelada' };
   const id = renta.status === 'Cerrada' ? 'historial'
     : renta.status === 'En mantenimiento' ? 'mantenimiento'
       : renta.status === 'En renta' ? 'rentas'

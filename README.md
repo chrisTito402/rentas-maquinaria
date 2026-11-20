@@ -70,8 +70,16 @@ Para crear una cuenta, configura temporalmente `AUTH_USUARIO` y
 npm run auth:crear-usuario --prefix backend
 ```
 
-Para elegir el rol agrega `AUTH_ROL=admin` o `AUTH_ROL=auxiliar` (si no se pone, la cuenta es `auxiliar`).
-El **administrador** aprueba cotizaciones; el **auxiliar** las consulta y las captura, pero no las aprueba.
+Para crear la primera cuenta administradora usa `AUTH_ROL=admin`. Al entrar, abre **Cuentas del equipo** para dar de alta a las demás personas, cambiar su perfil o desactivar su acceso. Cambiar un perfil o desactivar una cuenta cierra sus sesiones.
+
+| Perfil | Qué puede hacer |
+| --- | --- |
+| Administrador | Administrar cuentas, aprobar cotizaciones y registrar movimientos |
+| Personal de operaciones | Asignar unidades y registrar rentas, fallas, trabajos de taller y cancelaciones |
+| Auxiliar comercial | Capturar cotizaciones y consultar operaciones |
+| Solo consulta | Ver el panel, el inventario y los documentos |
+
+Los valores de `AUTH_ROL` son `admin`, `operador`, `auxiliar` y `consulta`. El comando usa `auxiliar` si omites el perfil.
 Las cuentas creadas antes de los roles quedaron como `admin`.
 
 El comando crea las tablas de autenticación que falten, sin borrar datos ni

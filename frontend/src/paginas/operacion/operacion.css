@@ -485,7 +485,9 @@ to { opacity: 1; }
 .operacion .calendar-status-note { font-size: 11px; }
 
 }
-@media print {.operacion { background: white; min-width: 0; }
+@media print {
+body:has(.document-modal) > #root { display: none !important; }
+.operacion { background: white; min-width: 0; }
 .operacion .app-shell > .sidebar, .operacion .app-shell > .workspace, .operacion .sidebar-overlay, .operacion .toast { display: none !important; }
 .operacion .modal-backdrop { position: static; display: block; padding: 0; background: white; backdrop-filter: none; overflow: visible; animation: none; }
 .operacion .modal.document-modal { border-radius: 0; box-shadow: none; max-height: none; max-width: none; overflow: visible; }

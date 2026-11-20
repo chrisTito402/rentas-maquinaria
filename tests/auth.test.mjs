@@ -31,7 +31,7 @@ test('login, renovación, sesión vencida, usuario inactivo, logout y protecció
   const sesiones = new Map();
   async function consultar(sql, valores = []) {
     if (sql.startsWith('SELECT id,')) return { rows: valores[0] === indiceUsuario('operativa') ? [cuenta] : [] };
-    if (sql.startsWith('INSERT INTO auth_sesiones')) sesiones.set(valores[0], valores[2]);
+    if (sql.startsWith('INSERT INTO auth_sesiones')) { sesiones.set(valores[0], valores[2]); return { rowCount: 1 }; }
     if (sql.startsWith('DELETE FROM auth_sesiones WHERE token_hash')) sesiones.delete(valores[0]);
     if (sql.startsWith('SELECT u.id')) return { rows: sesiones.get(valores[0]) > new Date() && cuenta.activo ? [cuenta] : [] };
     return { rows: [] };
