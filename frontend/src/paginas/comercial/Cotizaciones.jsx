@@ -6,7 +6,7 @@ import { api } from '../../api.js';
 import { dinero } from '@compartido/formato.js';
 import { ESTADOS, ORIGENES } from '@compartido/constantes.js';
 import './cotizaciones.css';
-import { puedeCapturarCotizacion } from '@compartido/perfiles.js';
+import { perfiles, puedeCapturarCotizacion } from '@compartido/perfiles.js';
 import { useSesion } from '../../auth/Sesion.jsx';
 
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
@@ -33,7 +33,6 @@ export function EstadoCotizacion({ valor }) {
 export default function Cotizaciones() {
   const navegar = useNavigate();
   const { usuario } = useSesion();
-  const esAdmin = usuario?.rol === 'admin';
   const [busqueda, setBusqueda] = useState('');
   const [estado, setEstado] = useState('');
   const [origen, setOrigen] = useState('');
@@ -78,7 +77,7 @@ export default function Cotizaciones() {
         </div>
         <div className="comercial-encabezado__acciones">
           {puedeCapturarCotizacion(usuario.rol) && <Link className="f-btn f-btn--primario" to="/comercial/cotizaciones/nueva">+ Nueva cotización</Link>}
-          <span className="comercial-perfil"><i>{esAdmin ? 'AD' : 'AU'}</i>{esAdmin ? 'Administrador' : 'Auxiliar comercial'}</span>
+          <span className="comercial-perfil"><i>{String(usuario?.rol ?? '').slice(0, 2).toUpperCase()}</i>{perfiles[usuario?.rol] ?? 'Personal interno'}</span>
         </div>
       </header>
 
