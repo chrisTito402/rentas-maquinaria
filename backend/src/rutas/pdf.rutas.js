@@ -17,7 +17,8 @@ r.get('/:id/pdf', async (req, res) => {
     `SELECT c.folio, c.estado, c.origen, c.notas, c.subtotal, c.envio, c.iva, c.total,
             c.creada_en AS "creadaEn",
             json_build_object('nombre', cl.nombre, 'telefono', cl.telefono, 'correo', cl.correo,
-                              'empresa', cl.empresa, 'municipio', cl.municipio, 'direccion', cl.direccion) AS cliente
+                              'empresa', cl.empresa, 'municipio', cl.municipio, 'direccion', cl.direccion,
+                              'codigoPostal', cl.codigo_postal, 'colonia', cl.colonia) AS cliente
        FROM cotizaciones c
        JOIN clientes cl ON cl.id = c.cliente_id
       WHERE c.id = $1`,

@@ -53,7 +53,7 @@ const pedir = async (metodo, ruta, cuerpo) => {
 const solicitud = {
   cliente: {
     nombre: 'Prueba Automática', telefono: '6441234567', correo: 'prueba@correo.com',
-    empresa: '', municipio: 'Cajeme', direccion: 'Calle de prueba 1, Centro',
+    empresa: '', municipio: 'Cajeme', direccion: 'Calle de prueba 1', codigoPostal: '85000', colonia: 'Ciudad Obregón Centro',
   },
   notas: 'Creada por npm test',
   lineas: [{ equipoId: 1, cantidad: 1, fechaInicio: '2026-12-01', fechaFin: '2026-12-03' }],
@@ -155,7 +155,7 @@ const borrarCotizacion = async (id) => {
 test('HU-13b · fuera de zona no se guarda y se marca el municipio', async (t) => {
   if (!hayBase) return t.skip('sin PostgreSQL');
   const { status, datos } = await pedir('POST', '/api/cotizaciones/web', {
-    ...solicitud, cliente: { ...solicitud.cliente, municipio: 'Hermosillo' },
+    ...solicitud, cliente: { ...solicitud.cliente, municipio: 'Hermosillo', codigoPostal: '83000', colonia: 'Hermosillo Centro' },
   });
   assert.equal(status, 400);
   assert.match(datos.errores.municipio, /Hermosillo/);
@@ -165,7 +165,7 @@ test('HU-13b · el servidor guarda el envío por unidad y el IVA sobre renta + e
   if (!hayBase) return t.skip('sin PostgreSQL');
   const creada = await pedir('POST', '/api/cotizaciones/web', {
     ...solicitud,
-    cliente: { ...solicitud.cliente, municipio: 'Navojoa' },
+    cliente: { ...solicitud.cliente, municipio: 'Navojoa', codigoPostal: '85800', colonia: 'Navojoa Centro' },
     lineas: [{ ...solicitud.lineas[0], cantidad: 2 }],
   });
   assert.equal(creada.status, 201);
@@ -307,4 +307,47 @@ test('Roles · el auxiliar no puede aprobar (403) y la cotización sigue Pendien
   assert.equal((await comoAuxiliar('PATCH', `/api/cotizaciones/${creada.datos.id}/aprobar`)).status, 403);
   const { rows } = await query('SELECT estado FROM cotizaciones WHERE id = $1', [creada.datos.id]);
   assert.equal(rows[0].estado, 'Pendiente');
+});
+
+// A4 · Código postal (con el catálogo cargado con npm run cp:cargar)
+const hayCatalogoCp = async () => (await pedir('GET', '/api/codigos-postales/85000')).status === 200;
+
+test('A4 · el código postal debe tener 5 dígitos y uno que no existe da 404', async (t) => {
+  assert.equal((await pedir('GET', '/api/codigos-postales/12')).status, 400);
+  if (!hayBase || !(await hayCatalogoCp())) return t.skip('sin el catálogo de códigos postales');
+  assert.equal((await pedir('GET', '/api/codigos-postales/99999')).status, 404);
+});
+
+test('A4 · el C.P. 85000 es de Cajeme, Sonora, y trae sus colonias', async (t) => {
+  if (!hayBase || !(await hayCatalogoCp())) return t.skip('sin el catálogo de códigos postales');
+  const { datos } = await pedir('GET', '/api/codigos-postales/85000');
+  assert.equal(datos.municipio, 'Cajeme');
+  assert.equal(datos.estado, 'Sonora');
+  assert.ok(datos.colonias.includes('Ciudad Obregón Centro'));
+});
+
+test('A4 · sin código postal no se guarda la solicitud', async () => {
+  const { status, datos } = await pedir('POST', '/api/cotizaciones/web', { ...solicitud, cliente: { ...solicitud.cliente, codigoPostal: '' } });
+  assert.equal(status, 400);
+  assert.ok(datos.errores.codigoPostal);
+});
+
+test('A4 · el C.P. tiene que ser del municipio y la colonia de ese C.P.', async (t) => {
+  if (!hayBase || !(await hayCatalogoCp())) return t.skip('sin el catálogo de códigos postales');
+  const otroMunicipio = await pedir('POST', '/api/cotizaciones/web', { ...solicitud, cliente: { ...solicitud.cliente, codigoPostal: '85800' } });
+  assert.equal(otroMunicipio.status, 400);
+  assert.match(otroMunicipio.datos.errores.municipio, /Navojoa/);
+  const otraColonia = await pedir('POST', '/api/cotizaciones/web', { ...solicitud, cliente: { ...solicitud.cliente, colonia: 'Colonia Inventada' } });
+  assert.equal(otraColonia.status, 400);
+  assert.ok(otraColonia.datos.errores.colonia);
+});
+
+test('A4 · se guardan el código postal y la colonia del cliente', async (t) => {
+  if (!hayBase) return t.skip('sin PostgreSQL');
+  const creada = await pedir('POST', '/api/cotizaciones/web', solicitud);
+  assert.equal(creada.status, 201);
+  t.after(() => borrarCotizacion(creada.datos.id));
+  const { datos } = await pedir('GET', `/api/cotizaciones/${creada.datos.id}`);
+  assert.equal(datos.cliente.codigoPostal, '85000');
+  assert.equal(datos.cliente.colonia, 'Ciudad Obregón Centro');
 });

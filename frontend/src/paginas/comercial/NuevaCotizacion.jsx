@@ -14,7 +14,7 @@ import { calcularCostos } from '@compartido/costos.js';
 import { dinero } from '@compartido/formato.js';
 import './nuevaCotizacion.css';
 
-const CLIENTE_INICIAL = { nombre: '', telefono: '', correo: '', empresa: '', municipio: '', direccion: '' };
+const CLIENTE_INICIAL = { nombre: '', telefono: '', correo: '', empresa: '', codigoPostal: '', municipio: '', colonia: '', direccion: '' };
 const LINEA_NUEVA = { equipoId: '', cantidad: 1, fechaInicio: '', fechaFin: '' };
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 

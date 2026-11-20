@@ -119,7 +119,8 @@ export default function DetalleCotizacion() {
               <div><span>Contacto</span><strong>{c.nombre}</strong></div>
               <div><span>WhatsApp</span><strong>{c.telefono}</strong></div>
               <div><span>Correo</span><strong>{c.correo}</strong></div>
-              <div className="ancho"><span>Municipio y dirección de entrega</span><strong>{c.municipio} · {c.direccion}</strong></div>
+              <div className="ancho"><span>Dirección de entrega del equipo</span>
+                <strong>{c.direccion}{c.colonia ? `, Col. ${c.colonia}` : ''} · {c.municipio}, Sonora{c.codigoPostal ? ` · C.P. ${c.codigoPostal}` : ''}</strong></div>
             </div>
           </section>
 

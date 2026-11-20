@@ -12,6 +12,8 @@ export function validarCliente(cliente = {}) {
   const correo = (cliente.correo ?? '').trim();
   const empresa = (cliente.empresa ?? '').trim();
   const direccion = (cliente.direccion ?? '').trim();
+  const codigoPostal = (cliente.codigoPostal ?? '').trim();
+  const colonia = (cliente.colonia ?? '').trim();
 
   if (!nombre) errores.nombre = 'Escribe tu nombre completo.';
   else if (nombre.length > 150) errores.nombre = 'Máximo 150 caracteres.';
@@ -28,7 +30,12 @@ export function validarCliente(cliente = {}) {
 
   if (!MUNICIPIOS.includes(cliente.municipio)) errores.municipio = 'Elige un municipio de la lista.';
 
-  if (!direccion) errores.direccion = 'Escribe calle, número y colonia.';
+  // A4: código postal y colonia de la entrega
+  if (!/^\d{5}$/.test(codigoPostal)) errores.codigoPostal = 'Escribe el código postal de 5 dígitos.';
+  if (!colonia) errores.colonia = 'Elige o escribe la colonia.';
+  else if (colonia.length > 100) errores.colonia = 'Máximo 100 caracteres.';
+
+  if (!direccion) errores.direccion = 'Escribe la calle y el número.';
   else if (direccion.length > 200) errores.direccion = 'Máximo 200 caracteres.';
 
   return errores;
