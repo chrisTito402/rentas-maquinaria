@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
+import { readFile } from 'node:fs/promises';
 import { app } from '../backend/src/app.js';
 import { prepararBase } from '../backend/src/preparar-base.js';
 
@@ -47,6 +48,19 @@ test('Si falla la preparación, revierte los cambios y libera la conexión', asy
   assert.equal(base.consultas.at(-1), 'ROLLBACK');
   assert.ok(!base.consultas.includes('COMMIT'));
   assert.ok(base.liberada);
+});
+
+test('HU-01b · las URL viven en PostgreSQL y solo se migran las ilustraciones de ejemplo', async () => {
+  const semilla = await readFile(new URL('../backend/db/semilla.sql', import.meta.url), 'utf8');
+  const arranque = await readFile(new URL('../backend/db/arranque.sql', import.meta.url), 'utf8');
+  const urls = (sql) => [...sql.matchAll(/https:\/\/thumb\.wikimedia\.org\/[^']+\.jpg/g)].map(([url]) => url);
+  assert.equal(urls(semilla).length, 6);
+  assert.equal(new Set(urls(semilla)).size, 6);
+  assert.deepEqual(urls(arranque), urls(semilla));
+  assert.ok(urls(semilla).every((url) => url.length <= 300));
+  assert.match(semilla, /'Rodillo 10 t'[^;]+FALSE\);/);
+  assert.match(arranque, /WHERE e\.foto = fotos\.local/);
+  assert.doesNotMatch(await readFile(new URL('../backend/db/equipos-figma.sql', import.meta.url), 'utf8'), /\bfoto\s*=/);
 });
 
 test('La página abre en el inicio y al recargar una pantalla interna', async t => {

@@ -1,6 +1,6 @@
 // Dueños: Katia · HU-10 Consultar cotizaciones (KAN-19) · Héctor · HU-15a Aprobar cotización (KAN-15)
 // Diseño: frames «2 · Detalle de solicitud» y «3a · Confirmación: aprobada» del Figma.
-// Rechazar con motivo (HU-15b) y el PDF (HU-07) llegan en sprints posteriores.
+// Rechazar con motivo (HU-15b) llega en otro sprint; el PDF es HU-07.
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../../api.js';
@@ -8,7 +8,7 @@ import BotonAprobar from '../../componentes/BotonAprobar.jsx';
 import { useSesion } from '../../auth/Sesion.jsx';
 import IconoCheck from '../../componentes/IconoCheck.jsx';
 import { EstadoCotizacion } from './Cotizaciones.jsx';
-import ProximoSprint from '../../componentes/ProximoSprint.jsx';
+import AccionesCotizacionPdf from '../../componentes/AccionesCotizacionPdf.jsx';
 import { cargarOperacion } from '../../servicios/operacion.js';
 import { etapaRenta } from '../../logica/flujo.js';
 import { dinero } from '@compartido/formato.js';
@@ -59,6 +59,7 @@ export default function DetalleCotizacion() {
         <h1>Cotización aprobada</h1>
         <p>La cotización {cot.folio} quedó aprobada y su estado ya se actualizó en la lista.</p>
         <p className="f-alerta f-alerta--exito">Contacta al cliente por WhatsApp al {c.telefono} para darle seguimiento.</p>
+        <AccionesCotizacionPdf cotizacion={cot} />
         <p>El siguiente paso es elegir las unidades físicas en Operación; todavía no se ha entregado ningún equipo.</p>
         <div className="confirmacion__acciones">
           <Link className="f-btn f-btn--primario" to={`/comercial/operacion/por-asignar?cotizacion=${cot.id}`}>Continuar a asignación →</Link>
@@ -166,9 +167,7 @@ export default function DetalleCotizacion() {
           {cot.estado === 'Pendiente' && usuario?.rol !== 'admin' && (
             <p className="f-alerta detalle-solo-admin">Solo el administrador puede aprobar esta cotización.</p>
           )}
-          <ProximoSprint hu="HU-07" kan="KAN-16" titulo="PDF y envío por WhatsApp">
-            Generar la cotización formal en PDF y mandársela al cliente por WhatsApp.
-          </ProximoSprint>
+          {cot.estado === 'Aprobada' && <AccionesCotizacionPdf cotizacion={cot} />}
         </div>
       </div>
     </>

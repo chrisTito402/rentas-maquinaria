@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node --watch src/servidor.js",
     "start": "node src/servidor.js",
-    "test": "node --test ../tests/render.test.mjs ../tests/cotizaciones.test.mjs ../tests/auth.test.mjs",
+    "test": "node --test ../tests/render.test.mjs ../tests/cotizaciones.test.mjs ../tests/auth.test.mjs ../tests/pdf.test.mjs",
     "auth:crear-usuario": "node scripts/crear-usuario.js",
     "db:crear": "node scripts/crear-db.js",
     "db:operacion": "node scripts/preparar-operacion.js",
@@ -17,6 +17,7 @@
     "dotenv": "16.4.7",
     "express": "5.1.0",
     "express-rate-limit": "^8.7.5",
+    "pdfkit": "^0.21.0",
     "pg": "8.13.1",
     "sharp": "^0.34.5"
   }
