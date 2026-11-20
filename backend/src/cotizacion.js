@@ -6,6 +6,8 @@ import { errorHttp } from './errores.js';
 import { calcularCostos, contarDias } from '../../compartido/costos.js';
 import { validarCliente } from '../../compartido/validarCliente.js';
 import { MAX_CANTIDAD, MAX_NOTAS, ORIGENES } from '../../compartido/constantes.js';
+import { buscarChoque, mensajeChoque } from '../../compartido/ocupadas.js';
+import { rangosOcupados } from './rutas/ocupadas.rutas.js';
 
 const esObjeto = (valor) => valor !== null && typeof valor === 'object' && !Array.isArray(valor);
 const CAMPOS_CLIENTE = { nombre: 150, telefono: 10, correo: 100, empresa: 100, municipio: 60, direccion: 200 };
@@ -70,6 +72,11 @@ export async function crearCotizacion(cuerpo, origen) {
     })), cliente.municipio);
     // HU-13b: fuera de zona no se puede cotizar.
     if (costos.fueraDeZona) throw errorHttp(400, costos.motivo, { errores: { municipio: costos.motivo } });
+    // HU-02a: no se puede pedir un equipo en días en que ya está apartado.
+    for (const [indice, linea] of cuerpo.lineas.entries()) {
+      const choque = buscarChoque(linea, await rangosOcupados(db, linea.equipoId));
+      if (choque) throw errorHttp(409, mensajeChoque(choque), { linea: indice });
+    }
     if (!Number.isFinite(costos.total) || costos.total >= 10000000000) {
       throw errorHttp(400, 'El importe de la solicitud supera el máximo permitido.');
     }

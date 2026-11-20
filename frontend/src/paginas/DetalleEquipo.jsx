@@ -1,5 +1,6 @@
 // Dueño: Héctor · HU-04 Ver detalle del equipo (KAN-8)
 // Diseño: frames «2 · Detalle del equipo» y «Ficha · Estado sin fechas (HU-04)» del Figma.
+// HU-02a (Chris): el calendario marca los días ocupados («Ficha · Estado fechas ocupadas (HU-02a)»).
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../api.js';
@@ -11,6 +12,7 @@ import ProximoSprint from '../componentes/ProximoSprint.jsx';
 import { imagenEquipo, partesCaracteristicas } from '../logica/imagenEquipo.js';
 import { MAX_CANTIDAD } from '@compartido/constantes.js';
 import { contarDias } from '@compartido/costos.js';
+import { buscarChoque, mensajeChoque } from '@compartido/ocupadas.js';
 import { dinero, fecha } from '@compartido/formato.js';
 
 const rangoCorto = (inicio, fin) => {
@@ -27,6 +29,8 @@ export default function DetalleEquipo() {
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
   const [mensaje, setMensaje] = useState('');
+  const [aviso, setAviso] = useState('');            // HU-02a: fechas que chocan
+  const [ocupados, setOcupados] = useState([]);      // HU-02a
 
   useEffect(() => {
     api.get(`/equipos/${id}`)
@@ -34,6 +38,8 @@ export default function DetalleEquipo() {
       .catch((fallo) => setError(
         fallo.status === 404 ? 'Equipo no encontrado.' : (fallo.message || 'No se pudo cargar el equipo.'),
       ));
+    // HU-02a: si no se pueden cargar los días ocupados, el servidor igual los revisa al enviar.
+    api.get(`/equipos/${id}/ocupadas`).then(setOcupados).catch(() => setOcupados([]));
   }, [id]);
 
   if (error) return (
@@ -50,6 +56,8 @@ export default function DetalleEquipo() {
   const cambiarCantidad = (n) => { setCantidad(Math.min(MAX_CANTIDAD, Math.max(1, n))); setMensaje(''); };
 
   function agregarEquipo() {
+    const choque = buscarChoque({ fechaInicio, fechaFin }, ocupados);
+    if (choque) { setAviso(mensajeChoque(choque)); return; }
     agregar({
       equipoId: equipo.id, nombre: equipo.nombre, foto: imagenEquipo(equipo), tarifaDia: equipo.tarifaDia,
       cantidad, fechaInicio, fechaFin,
@@ -113,11 +121,10 @@ export default function DetalleEquipo() {
           </div>
           <CalendarioRango
             inicio={fechaInicio} fin={fechaFin}
-            onCambio={(inicio, fin) => { setFechaInicio(inicio); setFechaFin(fin); setMensaje(''); }}
+            onCambio={(inicio, fin) => { setFechaInicio(inicio); setFechaFin(fin); setMensaje(''); setAviso(''); }}
+            ocupados={ocupados} onChoque={setAviso}
           />
-          <ProximoSprint hu="HU-02a" kan="KAN-9" titulo="Fechas ocupadas" duenio="Chris">
-            El calendario marcará los días en que este equipo ya está rentado y no dejará elegirlos.
-          </ProximoSprint>
+          {aviso && <p className="f-alerta f-alerta--error" role="alert">{aviso} Elige otras fechas.</p>}
 
           <div className="ficha-cantidad">
             <strong id="etiqueta-cantidad">Cantidad</strong>

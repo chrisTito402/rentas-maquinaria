@@ -156,3 +156,45 @@ test('HU-13b · el servidor guarda el envío por unidad y el IVA sobre renta + e
   assert.equal(datos.iva, Math.round((datos.subtotal + datos.envio) * 16) / 100);
   assert.equal(datos.total, datos.subtotal + datos.envio + datos.iva);
 });
+
+// HU-02a · Fechas ocupadas
+const lineaEn = (fechaInicio, fechaFin) => ({ equipoId: 3, cantidad: 1, fechaInicio, fechaFin });
+
+test('HU-02a · al aprobar se apartan las fechas y un rango que choca no se puede pedir', async (t) => {
+  if (!hayBase) return t.skip('sin PostgreSQL');
+  const primera = await pedir('POST', '/api/cotizaciones/web', { ...solicitud, lineas: [lineaEn('2027-03-10', '2027-03-12')] });
+  assert.equal(primera.status, 201);
+  t.after(() => borrarCotizacion(primera.datos.id));
+
+  // Pendiente todavía no aparta
+  assert.deepEqual((await pedir('GET', '/api/equipos/3/ocupadas')).datos.filter((o) => o.inicio.startsWith('2027-03')), []);
+
+  assert.equal((await pedir('PATCH', `/api/cotizaciones/${primera.datos.id}/aprobar`)).status, 200);
+  const ocupadas = (await pedir('GET', '/api/equipos/3/ocupadas')).datos;
+  assert.ok(ocupadas.some((o) => o.inicio === '2027-03-10' && o.fin === '2027-03-12'));
+
+  const choca = await pedir('POST', '/api/cotizaciones/web', { ...solicitud, lineas: [lineaEn('2027-03-12', '2027-03-14')] });
+  assert.equal(choca.status, 409);
+  assert.equal(choca.datos.error, 'Este equipo ya está rentado del 10/03/2027 al 12/03/2027.');
+
+  const libre = await pedir('POST', '/api/cotizaciones/web', { ...solicitud, lineas: [lineaEn('2027-03-13', '2027-03-15')] });
+  assert.equal(libre.status, 201);
+  t.after(() => borrarCotizacion(libre.datos.id));
+});
+
+test('HU-02a · no se aprueba una cotización cuyas fechas ya están apartadas', async (t) => {
+  if (!hayBase) return t.skip('sin PostgreSQL');
+  const a = await pedir('POST', '/api/cotizaciones/web', { ...solicitud, lineas: [lineaEn('2027-04-01', '2027-04-03')] });
+  const b = await pedir('POST', '/api/cotizaciones/web', { ...solicitud, lineas: [lineaEn('2027-04-03', '2027-04-05')] });
+  t.after(async () => { await borrarCotizacion(a.datos.id); await borrarCotizacion(b.datos.id); });
+  assert.equal((await pedir('PATCH', `/api/cotizaciones/${a.datos.id}/aprobar`)).status, 200);
+  const segunda = await pedir('PATCH', `/api/cotizaciones/${b.datos.id}/aprobar`);
+  assert.equal(segunda.status, 409);
+  assert.match(segunda.datos.error, /ya está rentado del 01\/04\/2027 al 03\/04\/2027/);
+  const { rows } = await query('SELECT estado FROM cotizaciones WHERE id = $1', [b.datos.id]);
+  assert.equal(rows[0].estado, 'Pendiente');
+});
+
+test('HU-02a · un equipo con id inválido responde 404 en ocupadas', async () => {
+  assert.equal((await pedir('GET', '/api/equipos/abc/ocupadas')).status, 404);
+});
