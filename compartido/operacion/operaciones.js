@@ -1,12 +1,14 @@
+import { autorSinCuenta } from './registros.js';
 import { trabajoAbierto, rentaVigente, fechaTrabajo } from './taller.js';
 
 // Transiciones operativas de Delivery 1.
 export const STATES = ['Disponible', 'Apartado', 'En preparación', 'En renta', 'En revisión', 'En mantenimiento', 'Fuera de servicio'];
 export const INVENTORY = ['Torreta', 'Extintor', 'Espejo', 'Focos delanteros', 'Focos traseros', 'Tanque de gas', 'Alarma de reversa', 'Dos cuchillas'];
 
+const camposVacios = Object.freeze({});
 const hoy = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Hermosillo' });
 
-export function applyOperation(data, id, action, fields = {}, autor = { by: 'Sin cuenta' }) {
+export function applyOperation(data, id, action, fields = camposVacios, autor = autorSinCuenta) {
   const next = structuredClone(data);
   const renta = next.rentals.find(item => item.id === id);
   if (!renta) throw new Error('No se encontró la renta.');

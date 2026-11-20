@@ -1,3 +1,5 @@
+export const autorSinCuenta = Object.freeze({ by: 'Sin cuenta' });
+
 export const normalizeText = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase().trim();
 
 export function rentalRecords(rentals, historical = false) {
