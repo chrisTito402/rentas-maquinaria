@@ -63,8 +63,8 @@ npx playwright show-report ../tests/aceptacion-operativa/resultados/reporte-html
 - `evidencias/`: capturas seleccionadas de la ejecución documentada para presentar.
 
 Las pruebas originales se reorganizaron sin mantener copias paralelas de los casos
-seleccionados. `tests/flujo.test.mjs` importa las reglas agrupadas para conservar
-`npm test --prefix frontend`. El comando `test:e2e` ejecuta la regresión restante
+seleccionados. `npm test --prefix frontend` ejecuta directamente las reglas agrupadas,
+sin un archivo intermediario de pruebas vacío. El comando `test:e2e` ejecuta la regresión restante
 y este paquete de pantallas. El mantenimiento en pantalla, la recuperación de
 carga y el login siguen fuera de los 15 como cobertura adicional.
 
