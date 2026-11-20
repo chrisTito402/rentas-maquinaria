@@ -5,6 +5,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../api.js';
 import { dinero } from '@compartido/formato.js';
 import ProximoSprint from '../../componentes/ProximoSprint.jsx';
+import { ESTADOS, ORIGENES } from '@compartido/constantes.js';
+import './cotizaciones.css';
 
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 const corta = (iso) => {
@@ -24,13 +26,16 @@ function haceCuanto(iso) {
 }
 
 export function EstadoCotizacion({ valor }) {
-  return <span className={`f-estado f-estado--${String(valor || '').toLowerCase()}`}>{valor}</span>;
+  return <span className={`f-estado f-estado--${String(valor || '').toLowerCase().replace(' ', '-')}`}>{valor}</span>;
 }
 
 export default function Cotizaciones() {
   const navegar = useNavigate();
   const [busqueda, setBusqueda] = useState('');
+  const [estado, setEstado] = useState('');
+  const [origen, setOrigen] = useState('');
   const [lista, setLista] = useState(null);
+  const [conteo, setConteo] = useState({});      // cuántas hay de cada estado, para las pestañas
   const [error, setError] = useState('');
   const [intento, setIntento] = useState(0);
 
@@ -38,12 +43,28 @@ export default function Cotizaciones() {
     let vigente = true;
     setError('');
     const espera = setTimeout(() => {              // busca 300 ms después de dejar de escribir
-      api.get(`/cotizaciones?q=${encodeURIComponent(busqueda)}`)
-        .then((datos) => { if (vigente) setLista(datos); })
+      // Se pide sin estado para contar las pestañas; la lista se pide ya filtrada.
+      const todas = api.get(`/cotizaciones?${new URLSearchParams({ q: busqueda, origen })}`);
+      const filtradas = estado ? api.get(`/cotizaciones?${new URLSearchParams({ q: busqueda, estado, origen })}`) : todas;
+      Promise.all([todas, filtradas])
+        .then(([datosTodas, datos]) => {
+          if (!vigente) return;
+          const cuenta = {};
+          for (const c of datosTodas) cuenta[c.estado] = (cuenta[c.estado] || 0) + 1;
+          setConteo({ ...cuenta, total: datosTodas.length });
+          setLista(datos);
+        })
         .catch((e) => { if (vigente) setError(e.message); });
     }, 300);
     return () => { vigente = false; clearTimeout(espera); };
-  }, [busqueda, intento]);
+  }, [busqueda, estado, origen, intento]);
+
+  const hayFiltros = Boolean(busqueda || estado || origen);
+  function limpiarFiltros() {
+    setBusqueda('');
+    setEstado('');
+    setOrigen('');
+  }
 
   return (
     <>
@@ -60,14 +81,26 @@ export default function Cotizaciones() {
       </ProximoSprint>
 
       <section className="f-tarjeta bandeja">
-        <div className="bandeja__filtros">
-          <div className="f-campo">
-            <label htmlFor="buscar" className="sr-only">Buscar por cliente o folio</label>
-            <input id="buscar" type="search" placeholder="Buscar por cliente o folio" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+        <div className="bandeja__filtros bandeja__filtros--hu16">
+          <div className="bandeja__pestanas" role="group" aria-label="Filtrar por estado">
+            <button type="button" aria-pressed={estado === ''} onClick={() => setEstado('')}>Todas · {conteo.total ?? 0}</button>
+            {ESTADOS.map((e) => (
+              <button type="button" key={e} aria-pressed={estado === e} onClick={() => setEstado(e)}>{e}s · {conteo[e] ?? 0}</button>
+            ))}
           </div>
-          <ProximoSprint hu="HU-16" kan="KAN-17" titulo="Filtros por estado y origen">
-            Pendiente, Aprobada o Rechazada; Web o Teléfono.
-          </ProximoSprint>
+          <div className="bandeja__busqueda">
+            <div className="f-campo">
+              <label htmlFor="buscar" className="sr-only">Buscar por cliente o folio</label>
+              <input id="buscar" type="search" placeholder="Buscar por cliente o folio" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+            </div>
+            <div className="f-campo bandeja__origen">
+              <label htmlFor="origen" className="sr-only">Filtrar por origen</label>
+              <select id="origen" value={origen} onChange={(e) => setOrigen(e.target.value)}>
+                <option value="">Origen: Todos</option>
+                {ORIGENES.map((o) => <option key={o} value={o}>Origen: {o}</option>)}
+              </select>
+            </div>
+          </div>
         </div>
 
         {error ? (
@@ -78,7 +111,10 @@ export default function Cotizaciones() {
         ) : lista === null ? (
           <p className="f-cargando" role="status">Buscando cotizaciones…</p>
         ) : lista.length === 0 ? (
-          <div className="bandeja__vacio"><p>{busqueda ? 'No hay cotizaciones con esa búsqueda.' : 'Todavía no hay cotizaciones.'}</p></div>
+          <div className="bandeja__vacio">
+            <p>{hayFiltros ? 'No hay cotizaciones con esos filtros.' : 'Todavía no hay cotizaciones.'}</p>
+            {hayFiltros && <button className="f-btn f-btn--secundario" type="button" onClick={limpiarFiltros}>Limpiar filtros</button>}
+          </div>
         ) : (
           <table className="tabla-f">
             <thead>
