@@ -131,7 +131,9 @@ function Formulario() {
                   <select aria-label={`Equipo de la línea ${indice + 1}`} value={linea.equipoId}
                     onChange={(e) => elegirEquipo(indice, e.target.value)}>
                     <option value="">Elige un equipo…</option>
-                    {equipos.map((e) => <option key={e.id} value={e.id}>{e.nombre}</option>)}
+                    {equipos.map((e) => (
+                      <option key={e.id} value={e.id} disabled={!e.disponible}>{e.nombre}{e.disponible ? '' : ' (no disponible)'}</option>
+                    ))}
                   </select>
 
                   <div className="nueva-linea__fechas">

@@ -60,8 +60,11 @@ export async function crearCotizacion(cuerpo, origen) {
   try {
     await db.query('BEGIN');
     const ids = [...new Set(cuerpo.lineas.map((linea) => linea.equipoId))];
-    const { rows: equipos } = await db.query('SELECT id, tarifa_dia FROM equipos WHERE id = ANY($1::int[])', [ids]);
+    const { rows: equipos } = await db.query('SELECT id, nombre, tarifa_dia, disponible FROM equipos WHERE id = ANY($1::int[])', [ids]);
     if (equipos.length !== ids.length) throw errorHttp(400, 'Uno o más equipos ya no existen en el catálogo.');
+    // HU-01b: un equipo marcado como No disponible no se puede cotizar.
+    const noDisponible = equipos.find((equipo) => !equipo.disponible);
+    if (noDisponible) throw errorHttp(400, `${noDisponible.nombre} no está disponible por ahora.`);
     const tarifas = new Map(equipos.map((equipo) => [equipo.id, equipo.tarifa_dia]));
     const costos = calcularCostos(cuerpo.lineas.map((linea) => ({
       equipoId: linea.equipoId,

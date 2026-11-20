@@ -79,7 +79,7 @@ function dibujar(doc, cotizacion, logoPng) {
   doc.font('Helvetica-Bold').fontSize(20).fillColor(COLOR.tinta)
     .text(`Cotización ${folio}`, MARGEN, 119, { width: 511 });
   const recibida = new Date(cotizacion.creadaEn).toLocaleDateString('es-MX', {
-    day: '2-digit', month: 'long', year: 'numeric',
+    day: '2-digit', month: 'long', year: 'numeric', timeZone: 'America/Hermosillo',
   });
   doc.font('Helvetica').fontSize(10).fillColor(COLOR.secundario)
     .text(`Aprobada · Solicitud recibida el ${recibida} · Origen: ${cotizacion.origen}`, MARGEN, 150, { width: 511 });
