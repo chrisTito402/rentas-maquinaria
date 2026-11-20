@@ -9,6 +9,8 @@ const correcto = {
   correo: 'juan@correo.com',
   empresa: '',
   municipio: 'Cajeme',
+  codigoPostal: '85000',
+  colonia: 'Ciudad Obregón Centro',
   direccion: 'Calle 5 de Febrero 100, Centro',
 };
 
@@ -49,4 +51,17 @@ test('la dirección es obligatoria y de máximo 200 caracteres', () => {
 test('los errores se regresan por campo', () => {
   const errores = validarCliente({ ...correcto, telefono: '123', correo: 'mal' });
   assert.deepEqual(Object.keys(errores).sort(), ['correo', 'telefono']);
+});
+
+// A4 · código postal y colonia
+test('el código postal debe tener 5 dígitos', () => {
+  assert.ok(validarCliente({ ...correcto, codigoPostal: '' }).codigoPostal);
+  assert.ok(validarCliente({ ...correcto, codigoPostal: '8500' }).codigoPostal);
+  assert.ok(validarCliente({ ...correcto, codigoPostal: '85a00' }).codigoPostal);
+  assert.equal(validarCliente({ ...correcto, codigoPostal: '85000' }).codigoPostal, undefined);
+});
+
+test('la colonia es obligatoria y de máximo 100 caracteres', () => {
+  assert.ok(validarCliente({ ...correcto, colonia: '  ' }).colonia);
+  assert.ok(validarCliente({ ...correcto, colonia: 'a'.repeat(101) }).colonia);
 });

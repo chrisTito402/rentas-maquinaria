@@ -10,6 +10,7 @@ import operacion from './rutas/operacion.rutas.js';
 import ocupadas from './rutas/ocupadas.rutas.js';   // HU-02a · Chris
 import panel from './rutas/panel.rutas.js';         // HU-05  · Katia
 import pdf from './rutas/pdf.rutas.js';             // HU-07  · Héctor
+import codigosPostales from './rutas/codigos-postales.rutas.js';   // A4 · Katia
 import cuentas from './auth/cuentas.js';
 import { accesoComercial, soloAdmin } from './auth/roles.js';
 import { crearRutasAuth } from './auth/rutas.js';
@@ -29,6 +30,7 @@ app.get('/api/salud', async (req, res) => {
 });
 
 app.use('/api/equipos', ocupadas, equipos);
+app.use('/api/codigos-postales', codigosPostales);
 // /web es pública; todo lo que va después de protegerSesion() pide haber iniciado sesión.
 app.use('/api/cotizaciones', solicitudes, comprobarOrigen, protegerSesion(), accesoComercial, panel, pdf, aprobaciones, consultas);
 

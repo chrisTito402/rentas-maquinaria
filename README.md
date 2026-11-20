@@ -177,6 +177,27 @@ npm run dev
 y las rentas de ejemplo de versiones anteriores. Conserva las cotizaciones
 de Comercial y los apartados registrados con ellas.
 
+### Códigos postales (ajuste A4)
+
+En el formulario del cliente, al escribir el código postal se llenan el estado,
+el municipio y la colonia. Los datos salen del **Catálogo Nacional de Códigos
+Postales de Correos de México** (solo Sonora). Para cargarlos, una sola vez:
+
+```bash
+npm run cp:cargar --prefix backend
+```
+
+El comando descarga el archivo de Sonora directo de Correos de México y llena
+la tabla `codigos_postales` (unas 8,800 colonias). Tarda alrededor de un minuto
+porque la página de Correos es lenta. Si no responde, descarga Sonora en formato
+TXT desde https://www.correosdemexico.gob.mx/SSLServicios/ConsultaCP/CodigoPostal_Exportar.aspx
+y corre `CP_ARCHIVO=ruta/Sonora.txt npm run cp:cargar --prefix backend`.
+
+El archivo **no se sube al repositorio**: Correos lo ofrece para uso particular
+y no permite distribuirlo. La app solo responde un código postal a la vez.
+Si no se ha cargado el catálogo, el formulario sigue funcionando y el municipio
+y la colonia se capturan a mano.
+
 ## Prueba del recorrido
 
 1. En [Cotizaciones](http://localhost:5173/comercial/cotizaciones),

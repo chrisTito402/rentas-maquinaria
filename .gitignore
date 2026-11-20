@@ -5,3 +5,8 @@ test-results/
 playwright-report/
 tests/aceptacion-operativa/resultados/
 .DS_Store
+
+# A4: el catálogo de Correos de México no se redistribuye (uso particular)
+Sonora.txt
+*.txt.zip
+CP_*.zip

@@ -24,8 +24,19 @@ CREATE TABLE clientes (
   correo     VARCHAR(100) NOT NULL,
   empresa    VARCHAR(100),
   municipio  VARCHAR(60)  NOT NULL,
-  direccion  VARCHAR(200) NOT NULL
+  direccion  VARCHAR(200) NOT NULL,
+  codigo_postal CHAR(5),          -- A4
+  colonia       VARCHAR(100)      -- A4
 );
+
+-- A4: el catálogo de códigos postales no se borra con db:crear (se llena con npm run cp:cargar).
+CREATE TABLE IF NOT EXISTS codigos_postales (
+  codigo_postal CHAR(5)      NOT NULL,
+  colonia       VARCHAR(100) NOT NULL,
+  municipio     VARCHAR(80)  NOT NULL,
+  estado        VARCHAR(40)  NOT NULL
+);
+CREATE INDEX IF NOT EXISTS codigos_postales_cp ON codigos_postales (codigo_postal);
 
 CREATE TABLE cotizaciones (
   id          SERIAL PRIMARY KEY,

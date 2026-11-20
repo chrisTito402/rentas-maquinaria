@@ -1,0 +1,4 @@
+/* HU-06 · Ajustes A3 y A4: bloque de la dirección de entrega */
+.formulario-entrega { border-top: 1px solid var(--f-borde); padding-top: 14px; font-size: 13px; line-height: 1.5; }
+.formulario-entrega strong { display: block; color: var(--f-texto); font-size: 14px; margin-bottom: 2px; }
+.f-campo .formulario-fijo, .f-campo select:disabled { background: var(--f-sutil); color: var(--f-texto-2); cursor: default; }

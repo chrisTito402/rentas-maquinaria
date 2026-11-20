@@ -9,6 +9,7 @@
     "test": "node --test ../tests/render.test.mjs ../tests/cotizaciones.test.mjs ../tests/auth.test.mjs",
     "auth:crear-usuario": "node scripts/crear-usuario.js",
     "db:crear": "node scripts/crear-db.js",
+    "cp:cargar": "node scripts/cargar-cp.js",
     "db:operacion": "node scripts/preparar-operacion.js",
     "test:operaciones": "node --test ../tests/operaciones-sprint2.test.mjs"
   },

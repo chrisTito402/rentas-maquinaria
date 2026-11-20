@@ -13,8 +13,8 @@ import { MAX_NOTAS } from '@compartido/constantes.js';
 import { calcularCostos } from '@compartido/costos.js';
 import { dinero } from '@compartido/formato.js';
 
-const CLIENTE_INICIAL = { nombre: '', telefono: '', correo: '', empresa: '', municipio: '', direccion: '' };
-const ETIQUETAS = { nombre: 'Nombre', telefono: 'Teléfono', correo: 'Correo', empresa: 'Empresa', municipio: 'Municipio', direccion: 'Dirección' };
+const CLIENTE_INICIAL = { nombre: '', telefono: '', correo: '', empresa: '', codigoPostal: '', municipio: '', colonia: '', direccion: '' };
+const ETIQUETAS = { nombre: 'Nombre', telefono: 'Teléfono', correo: 'Correo', empresa: 'Empresa', codigoPostal: 'Código postal', municipio: 'Municipio', colonia: 'Colonia', direccion: 'Calle y número' };
 const corta = (iso) => new Date(`${iso}T12:00:00`).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
 
 export default function MiCotizacion() {

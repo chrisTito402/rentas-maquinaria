@@ -8,11 +8,12 @@ import { validarCliente } from '../../compartido/validarCliente.js';
 import { MAX_CANTIDAD, MAX_NOTAS, ORIGENES } from '../../compartido/constantes.js';
 import { buscarChoque, mensajeChoque } from '../../compartido/ocupadas.js';
 import { rangosOcupados } from './rutas/ocupadas.rutas.js';
+import { buscarCodigoPostal, hayCatalogo } from './codigosPostales.js';
 
 const esObjeto = (valor) => valor !== null && typeof valor === 'object' && !Array.isArray(valor);
-const CAMPOS_CLIENTE = { nombre: 150, telefono: 10, correo: 100, empresa: 100, municipio: 60, direccion: 200 };
+const CAMPOS_CLIENTE = { nombre: 150, telefono: 10, correo: 100, empresa: 100, municipio: 60, direccion: 200, codigoPostal: 5, colonia: 100 };
 
-// cuerpo: { cliente: {nombre, telefono, correo, empresa, municipio, direccion}, notas,
+// cuerpo: { cliente: {nombre, telefono, correo, empresa, municipio, direccion, codigoPostal, colonia}, notas,
 //           lineas: [{ equipoId, cantidad, fechaInicio, fechaFin }] }
 // origen: 'Web' | 'Panel'
 // regresa: { id, folio, total }   ·   lanza errorHttp 400 con { errores? } si algo está mal
@@ -59,6 +60,15 @@ export async function crearCotizacion(cuerpo, origen) {
   const db = await pool.connect();
   try {
     await db.query('BEGIN');
+    // A4 (Katia): si ya se cargó el catálogo, el C.P. debe existir y coincidir con el municipio y la colonia.
+    if (await hayCatalogo(db)) {
+      const info = await buscarCodigoPostal(db, cliente.codigoPostal);
+      const error = !info ? { codigoPostal: 'No encontramos ese código postal en Sonora.' }
+        : info.municipio !== cliente.municipio ? { municipio: `El código postal ${cliente.codigoPostal} es de ${info.municipio}.` }
+        : !info.colonias.includes(cliente.colonia) ? { colonia: 'Elige una colonia de ese código postal.' }
+        : null;
+      if (error) throw errorHttp(400, 'Revisa los datos del cliente.', { errores: error });
+    }
     const ids = [...new Set(cuerpo.lineas.map((linea) => linea.equipoId))];
     const { rows: equipos } = await db.query('SELECT id, tarifa_dia FROM equipos WHERE id = ANY($1::int[])', [ids]);
     if (equipos.length !== ids.length) throw errorHttp(400, 'Uno o más equipos ya no existen en el catálogo.');
@@ -82,8 +92,10 @@ export async function crearCotizacion(cuerpo, origen) {
     }
 
     const { rows: clientes } = await db.query(
-      'INSERT INTO clientes (nombre, telefono, correo, empresa, municipio, direccion) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
-      [cliente.nombre, cliente.telefono, cliente.correo, cliente.empresa || null, cliente.municipio, cliente.direccion],
+      `INSERT INTO clientes (nombre, telefono, correo, empresa, municipio, direccion, codigo_postal, colonia)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
+      [cliente.nombre, cliente.telefono, cliente.correo, cliente.empresa || null, cliente.municipio, cliente.direccion,
+        cliente.codigoPostal, cliente.colonia],
     );
     const { rows: cotizaciones } = await db.query(
       `INSERT INTO cotizaciones (cliente_id, origen, estado, notas, subtotal, envio, iva, total)

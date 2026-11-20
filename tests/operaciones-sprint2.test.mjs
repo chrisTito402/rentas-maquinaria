@@ -82,7 +82,7 @@ test('recorrido del sprint 2 con cuentas reales y PostgreSQL', { skip: !process.
   const proxima = d => { const fecha = new Date(hoy + 'T12:00:00Z'); fecha.setUTCDate(fecha.getUTCDate()+d); return fecha.toISOString().slice(0,10); };
   async function cotizar(dias) {
     const { data: cot } = await pedir('POST','/cotizaciones/web','',{
-      cliente:{nombre:'Equipo Prueba',telefono:'6441234567',correo:'prueba@example.com',empresa:'',municipio:'Cajeme',direccion:'Calle de prueba 1'},
+      cliente:{nombre:'Equipo Prueba',telefono:'6441234567',correo:'prueba@example.com',empresa:'',municipio:'Cajeme',direccion:'Calle de prueba 1',codigoPostal:'85000',colonia:'Ciudad Obregón Centro'},
       notas:'Prueba',lineas:[{equipoId:1,cantidad:1,fechaInicio:proxima(dias),fechaFin:proxima(dias+1)}],
     },201);
     await pedir('PATCH','/cotizaciones/'+cot.id+'/aprobar',admin,{});

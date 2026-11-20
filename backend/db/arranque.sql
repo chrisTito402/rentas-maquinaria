@@ -62,3 +62,16 @@ CREATE TABLE IF NOT EXISTS operacion_rentas (
 -- Sprint 2: columnas nuevas para bases que ya existen (no borra datos).
 ALTER TABLE equipos      ADD COLUMN IF NOT EXISTS disponible BOOLEAN       NOT NULL DEFAULT TRUE;   -- HU-01b
 ALTER TABLE cotizaciones ADD COLUMN IF NOT EXISTS envio      NUMERIC(12,2) NOT NULL DEFAULT 0;      -- HU-13b
+
+-- A4 (re-presentación del Sprint 1): código postal y colonia del cliente.
+ALTER TABLE clientes ADD COLUMN IF NOT EXISTS codigo_postal CHAR(5);
+ALTER TABLE clientes ADD COLUMN IF NOT EXISTS colonia       VARCHAR(100);
+-- Catálogo de códigos postales de Sonora (Correos de México). Se llena con: npm run cp:cargar --prefix backend
+-- El archivo de Correos no se guarda en el repo: su licencia no permite redistribuirlo.
+CREATE TABLE IF NOT EXISTS codigos_postales (
+  codigo_postal CHAR(5)      NOT NULL,
+  colonia       VARCHAR(100) NOT NULL,
+  municipio     VARCHAR(80)  NOT NULL,
+  estado        VARCHAR(40)  NOT NULL
+);
+CREATE INDEX IF NOT EXISTS codigos_postales_cp ON codigos_postales (codigo_postal);
