@@ -33,8 +33,9 @@ r.post('/acciones', async (req, res) => {
 r.post('/reservaciones/:id/asignar', async (req, res) => {
   const id = Number(req.params.id);
   const unidades = req.body?.unidades;
+  const automatica = req.body?.automatica === true && unidades === undefined;
   if (!Number.isInteger(id) || id < 1 || id > 2147483647
-    || !Array.isArray(unidades) || unidades.some(unidad => typeof unidad !== 'string')) {
+    || (!automatica && (!Array.isArray(unidades) || unidades.some(unidad => typeof unidad !== 'string')))) {
     throw errorHttp(400, 'La cotización o los identificadores no son válidos.');
   }
   res.json(await crearApartado(id, unidades, autor(req)));

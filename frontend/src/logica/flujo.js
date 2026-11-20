@@ -1,5 +1,5 @@
 export const etapas = [
-  { id: 'por-asignar', titulo: 'Por asignar', descripcion: 'Cotizaciones aprobadas. Elige las unidades físicas antes de preparar los equipos.' },
+  { id: 'por-asignar', titulo: 'Por asignar', descripcion: 'Cotizaciones aprobadas. El sistema elige las máquinas disponibles para cada reservación.' },
   { id: 'preparacion', titulo: 'Preparación', descripcion: 'Unidades asignadas que necesitan revisión del mecánico antes de salir.' },
   { id: 'listos', titulo: 'Listos para entregar', descripcion: 'Equipos preparados. Revisa los documentos y registra la entrega cuando ocurra.' },
   { id: 'rentas', titulo: 'En renta', descripcion: 'Equipos con el cliente. Registra la devolución cuando lleguen.' },
