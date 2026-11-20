@@ -7,6 +7,9 @@ import solicitudes from './rutas/solicitudes.rutas.js';
 import aprobaciones from './rutas/aprobaciones.rutas.js';
 import consultas from './rutas/consultas.rutas.js';
 import operacion from './rutas/operacion.rutas.js';
+import ocupadas from './rutas/ocupadas.rutas.js';   // HU-02a · Chris
+import panel from './rutas/panel.rutas.js';         // HU-05  · Katia
+import pdf from './rutas/pdf.rutas.js';             // HU-07  · Héctor
 import { crearRutasAuth } from './auth/rutas.js';
 import { comprobarOrigen, protegerSesion } from './auth/sesion.js';
 
@@ -22,8 +25,9 @@ app.get('/api/salud', async (req, res) => {
   res.json({ ok: true });
 });
 
-app.use('/api/equipos', equipos);
-app.use('/api/cotizaciones', solicitudes, comprobarOrigen, protegerSesion(), aprobaciones, consultas);
+app.use('/api/equipos', ocupadas, equipos);
+// /web es pública; todo lo que va después de protegerSesion() pide haber iniciado sesión.
+app.use('/api/cotizaciones', solicitudes, comprobarOrigen, protegerSesion(), panel, pdf, aprobaciones, consultas);
 
 // Las rutas de la API nunca deben devolver la página de React.
 app.use('/api', (req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));

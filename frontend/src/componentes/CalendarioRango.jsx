@@ -1,6 +1,10 @@
 // Calendario para elegir el rango de renta: primer clic = inicio, segundo clic = fin.
-// Uso: <CalendarioRango inicio="2026-10-12" fin="2026-10-15" onCambio={(inicio, fin) => ...} />
+// Uso: <CalendarioRango inicio="2026-10-12" fin="2026-10-15" onCambio={(inicio, fin) => ...}
+//                       ocupados={[{ inicio, fin }]} onChoque={(mensaje) => ...} />
+// HU-02a (Chris): los días ocupados se ven marcados y no se pueden elegir; si el rango
+// brinca un día ocupado, no se acepta y se avisa con onChoque.
 import { useState } from 'react';
+import { chocan, estaOcupado, mensajeChoque } from '@compartido/ocupadas.js';
 
 const DIAS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 const iso = (anio, mes, dia) => `${anio}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
@@ -10,7 +14,7 @@ function mesInicial(inicio) {
   return { anio: base.getFullYear(), mes: base.getMonth() };
 }
 
-export default function CalendarioRango({ inicio, fin, onCambio }) {
+export default function CalendarioRango({ inicio, fin, onCambio, ocupados = [], onChoque }) {
   const [vista, setVista] = useState(() => mesInicial(inicio));
   const { anio, mes } = vista;
   const primerDia = (new Date(anio, mes, 1).getDay() + 6) % 7;   // lunes = 0
@@ -24,8 +28,13 @@ export default function CalendarioRango({ inicio, fin, onCambio }) {
   }
 
   function elegir(dia) {
-    if (!inicio || fin) return onCambio(dia, '');
-    if (dia < inicio) return onCambio(dia, '');
+    if (estaOcupado(dia, ocupados)) return;
+    if (!inicio || fin || dia < inicio) return onCambio(dia, '');
+    const choque = ocupados.find((o) => chocan({ inicio, fin: dia }, o));
+    if (choque) {
+      onCambio(dia, '');                     // el día tocado queda como nuevo inicio
+      return onChoque?.(mensajeChoque(choque));   // y se avisa después, para que el aviso no se borre
+    }
     return onCambio(inicio, dia);
   }
 
@@ -35,12 +44,14 @@ export default function CalendarioRango({ inicio, fin, onCambio }) {
     const dia = iso(anio, mes, d);
     const extremo = dia === inicio || dia === fin;
     const enRango = inicio && fin && dia > inicio && dia < fin;
+    const ocupado = estaOcupado(dia, ocupados);
+    const nombre = new Date(anio, mes, d).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
     celdas.push(
       <button
-        type="button" key={dia} onClick={() => elegir(dia)}
-        className={`calendario__dia${enRango ? ' calendario__dia--rango' : ''}${extremo ? ' calendario__dia--extremo' : ''}`}
+        type="button" key={dia} onClick={() => elegir(dia)} disabled={ocupado}
+        className={`calendario__dia${enRango ? ' calendario__dia--rango' : ''}${extremo ? ' calendario__dia--extremo' : ''}${ocupado ? ' calendario__dia--ocupado' : ''}`}
         aria-pressed={extremo || Boolean(enRango)}
-        aria-label={new Date(anio, mes, d).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}
+        aria-label={ocupado ? `${nombre}, ocupado` : nombre}
       >
         {d}
       </button>,
@@ -58,7 +69,10 @@ export default function CalendarioRango({ inicio, fin, onCambio }) {
         {DIAS.map((d, i) => <span className="calendario__dia-semana" key={i}>{d}</span>)}
         {celdas}
       </div>
-      <div className="calendario__leyenda"><span><i />Tu selección</span></div>
+      <div className="calendario__leyenda">
+        <span><i />Tu selección</span>
+        {ocupados.length > 0 && <span><i className="calendario__leyenda--ocupado" />Ocupado</span>}
+      </div>
     </div>
   );
 }

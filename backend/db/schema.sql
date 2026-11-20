@@ -13,7 +13,8 @@ CREATE TABLE equipos (
   modelo           VARCHAR(80)   NOT NULL,
   caracteristicas  TEXT          NOT NULL,
   tarifa_dia       NUMERIC(10,2) NOT NULL,
-  foto             VARCHAR(300)  NOT NULL
+  foto             VARCHAR(300)  NOT NULL,
+  disponible       BOOLEAN       NOT NULL DEFAULT TRUE   -- HU-01b
 );
 
 CREATE TABLE clientes (
@@ -34,6 +35,7 @@ CREATE TABLE cotizaciones (
   estado      VARCHAR(20)   NOT NULL DEFAULT 'Pendiente',
   notas       VARCHAR(500),
   subtotal    NUMERIC(12,2) NOT NULL,
+  envio       NUMERIC(12,2) NOT NULL DEFAULT 0,   -- HU-13b
   iva         NUMERIC(12,2) NOT NULL,
   total       NUMERIC(12,2) NOT NULL,
   creada_en   TIMESTAMP     NOT NULL DEFAULT NOW()

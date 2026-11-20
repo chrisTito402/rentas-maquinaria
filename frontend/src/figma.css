@@ -234,6 +234,9 @@ body:has(.sitio), body:has(.comercial) { margin: 0; background: var(--f-fondo); 
 .calendario__dia--extremo { background: var(--f-accion) !important; color: var(--f-blanco) !important; font-weight: 700; border-radius: var(--f-r-sm); }
 .calendario__leyenda { display: flex; gap: 14px; align-items: center; margin-top: 10px; font-size: 12px; color: var(--f-texto-2); }
 .calendario__leyenda i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: var(--f-accion); margin-right: 6px; vertical-align: -1px; }
+/* HU-02a · días en que el equipo ya está apartado */
+.calendario__dia--ocupado, .calendario__dia--ocupado:hover { background: #e5e7eb; color: #9ca3af; text-decoration: line-through; cursor: not-allowed; }
+.calendario__leyenda i.calendario__leyenda--ocupado { background: #e5e7eb; border: 1px solid #d1d5db; }
 
 /* Solicitud de cotización */
 .solicitud-intro { display: flex; flex-direction: column; gap: 10px; margin: 8px 0 32px; }

@@ -149,6 +149,8 @@ export default function DetalleCotizacion() {
             <h2 className="detalle-bloque__titulo" id="titulo-costos">Desglose de costos</h2>
             <div className="f-desglose">
               <div className="f-desglose__fila"><span>Subtotal de renta</span><strong>{dinero(cot.subtotal)}</strong></div>
+              {/* HU-13b (Chris): envío por unidad al municipio de entrega */}
+              <div className="f-desglose__fila"><span>Envío a {cot.cliente.municipio}</span><strong>{dinero(cot.envio ?? 0)}</strong></div>
               <div className="f-desglose__fila"><span>IVA 16 %</span><strong>{dinero(cot.iva)}</strong></div>
               <div className="f-desglose__total"><span>Total</span><strong style={{ color: 'var(--f-texto)' }}>{dinero(cot.total)}</strong></div>
             </div>
