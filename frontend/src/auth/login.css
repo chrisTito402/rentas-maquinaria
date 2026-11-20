@@ -33,5 +33,8 @@
 .acceso-submit:disabled { opacity: .65; cursor: wait; }
 .acceso-error { color: var(--f-error); background: var(--f-error-fondo); padding: 12px; border-radius: 8px; font-size: 14px; line-height: 1.5; }
 .acceso-espera { padding: 48px 24px; text-align: center; }
-.acceso-salir { display: block; margin-top: 12px; padding: 9px 12px; border: 1px solid var(--f-borde); border-radius: 8px; background: white; color: var(--f-texto); font: inherit; cursor: pointer; }
-@media (max-width: 760px) { .comercial-menu .comercial-menu__perfil { display: block; margin: 0; } }
+.comercial .comercial-menu__perfil { display: grid; gap: 6px; justify-items: start; }
+.comercial .comercial-menu__perfil .acceso-salir { display: block; margin-block: 4px; padding: 9px 12px; border: 1px solid var(--f-borde); border-radius: 8px; background: white; color: var(--f-texto); font: inherit; cursor: pointer; }
+@media (max-width: 760px) { .comercial-menu .comercial-menu__perfil { display: grid; margin: 0; } }
+.operacion .cuenta-habilitada { display: inline-flex; align-items: center; gap: 8px; }
+.operacion .cuenta-habilitada input[type="checkbox"] { width: 20px; height: 20px; min-height: 0; margin: 0; }

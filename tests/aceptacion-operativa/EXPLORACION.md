@@ -1,5 +1,7 @@
 # Exploración de Operativa
 
+Corte original del 19 de noviembre. La [verificación del 20 de noviembre](evidencias/cierre/README.md) reúne las correcciones y las pruebas posteriores.
+
 La aceptación sigue pasos conocidos; la exploración cambia datos y secuencias para
 buscar problemas no cubiertos por esos pasos. Este documento ofrece sesiones
 manuales para el equipo y registra una exploración de lógica realmente ejecutada.

@@ -1,4 +1,7 @@
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { useState } from 'react';
+
+const buscar = v => String(v ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 import { resumirCatalogo } from '@compartido/operacion/catalogo.js';
 
 const tonos = {
@@ -7,10 +10,11 @@ const tonos = {
 };
 
 function Unidad({ unidad, pendiente = false }) {
+  const { search } = useLocation();
   const estado = pendiente && unidad.state === 'Disponible' ? 'Sin asignar' : unidad.state;
   return (
     <div className="catalog-meta">
-      <span className="catalog-code">{unidad.id}</span>
+      <Link className="catalog-code" to={'/comercial/inventario/' + encodeURIComponent(unidad.id) + search}>{unidad.id}</Link>
       <span className={'badge ' + (tonos[estado] ?? 'muted')}><i />{estado}</span>
     </div>
   );
@@ -54,9 +58,17 @@ function RegistroUnidad({ equipo, onRegister }) {
 }
 
 export default function EquipmentCatalog({ units, catalogo, reservaciones, rentals, onRegister }) {
-  const [soloDisponibles, setSoloDisponibles] = useState(false);
+  const [params, setParams] = useSearchParams();
+  const query = params.get('q') || '';
+  const soloDisponibles = params.get('libres') === '1';
+  function filtro(clave, valor) {
+    setParams(actual => { const p = new URLSearchParams(actual); if (valor) p.set(clave, valor); else p.delete(clave); return p; }, { replace: true });
+  }
+  const setSoloDisponibles = activo => filtro('libres', activo ? '1' : '');
+  const coincide = (...valores) => valores.some(v => buscar(v).includes(buscar(query.trim())));
   const { modelos, sinModelo } = resumirCatalogo(catalogo, units, reservaciones, rentals);
-  const visibles = soloDisponibles ? modelos.filter(equipo => equipo.disponibles > 0) : modelos;
+  const visibles = modelos.filter(e => (!soloDisponibles || e.disponibles > 0) && (coincide(e.nombre, e.modelo) || e.unidades.some(u => (!soloDisponibles || u.state === 'Disponible') && coincide(u.id, u.serial, u.model))));
+  const sueltas = sinModelo.filter(u => (!soloDisponibles || u.state === 'Disponible') && coincide(u.id, u.serial, u.name, u.model));
 
   return (
     <>
@@ -65,6 +77,7 @@ export default function EquipmentCatalog({ units, catalogo, reservaciones, renta
           <p>Consulta la disponibilidad y registra unidades. Para asignarlas a una cotización, entra a Operación → Por asignar.</p>
         </div>
       </header>
+      <label className="field">Buscar por unidad o modelo<input type="search" value={query} onChange={e => filtro('q', e.target.value)} /></label>
       <div className="tabs">
         <button className={soloDisponibles ? '' : 'selected'} aria-pressed={!soloDisponibles}
           onClick={() => setSoloDisponibles(false)}>Todos</button>
@@ -86,28 +99,24 @@ export default function EquipmentCatalog({ units, catalogo, reservaciones, renta
               </div>
               <h2>{equipo.nombre}</h2>
               <p className="catalog-model">{equipo.modelo}</p>
-              {!soloDisponibles && (
-                <>
                   {equipo.pendientes > 0 && <p>{equipo.pendientes} solicitadas en reservaciones por asignar.</p>}
-                  {equipo.unidades.length ? equipo.unidades.map(unidad => (
+                  {equipo.unidades.length ? equipo.unidades.filter(u => (!soloDisponibles || u.state === 'Disponible') && (coincide(equipo.nombre, equipo.modelo) || coincide(u.id, u.serial, u.model))).map(unidad => (
                     <Unidad key={unidad.id} unidad={unidad} pendiente={equipo.pendientes > 0} />
                   )) : <p>Sin unidades físicas registradas.</p>}
-                  <RegistroUnidad equipo={equipo} onRegister={onRegister} />
-                </>
-              )}
+                  {onRegister && <RegistroUnidad equipo={equipo} onRegister={onRegister} />}
             </div>
           </article>
         ))}
       </div>
-      {!visibles.length && (
+      {!visibles.length && !sueltas.length && (
         <section className="panel empty">
-          <h3>{soloDisponibles ? 'No hay equipos disponibles' : 'El catálogo está vacío'}</h3>
+          <h3>{query ? 'Sin coincidencias' : soloDisponibles ? 'No hay equipos disponibles' : 'El catálogo está vacío'}</h3>
         </section>
       )}
-      {!soloDisponibles && sinModelo.length > 0 && (
+      {sueltas.length > 0 && (
         <section className="panel">
           <div className="panel-heading"><h2>Unidades sin modelo vinculado</h2></div>
-          {sinModelo.map(unidad => <Unidad key={unidad.id} unidad={unidad} />)}
+          {sueltas.map(unidad => <Unidad key={unidad.id} unidad={unidad} />)}
         </section>
       )}
     </>

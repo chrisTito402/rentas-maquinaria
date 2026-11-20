@@ -29,7 +29,10 @@ export function crearRutasAuth(consultar = query) {
     const anterior = leerToken(req);
     if (anterior) await consultar('DELETE FROM auth_sesiones WHERE token_hash = $1', [hashToken(anterior)]);
     await consultar('DELETE FROM auth_sesiones WHERE vence_en <= NOW()');
-    await consultar('INSERT INTO auth_sesiones (token_hash, usuario_id, vence_en) VALUES ($1, $2, $3)', [hashToken(token), cuenta.id, vence]);
+    const creada = await consultar(`INSERT INTO auth_sesiones (token_hash, usuario_id, vence_en)
+      SELECT $1, id, $3 FROM auth_usuarios WHERE id=$2 AND activo AND rol=$4 FOR SHARE RETURNING usuario_id`,
+      [hashToken(token), cuenta.id, vence, cuenta.rol]);
+    if (!creada.rowCount) throw errorHttp(401, 'Tu cuenta cambió. Vuelve a iniciar sesión.');
     res.cookie(nombreCookie(), token, { ...opcionesCookie(), maxAge: 8 * 60 * 60 * 1000 });
     res.json({ usuario: { id: cuenta.id, nombre: descifrarUsuario(cuenta.usuario_cifrado), rol: cuenta.rol } });
   });

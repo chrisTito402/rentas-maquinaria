@@ -6,6 +6,7 @@ import { api } from '../../api.js';
 import { dinero } from '@compartido/formato.js';
 import { ESTADOS, ORIGENES } from '@compartido/constantes.js';
 import './cotizaciones.css';
+import { puedeCapturarCotizacion } from '@compartido/perfiles.js';
 import { useSesion } from '../../auth/Sesion.jsx';
 
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
@@ -76,7 +77,7 @@ export default function Cotizaciones() {
           <p>Consulta y da seguimiento a las cotizaciones.</p>
         </div>
         <div className="comercial-encabezado__acciones">
-          <Link className="f-btn f-btn--primario" to="/comercial/cotizaciones/nueva">+ Nueva cotización</Link>
+          {puedeCapturarCotizacion(usuario.rol) && <Link className="f-btn f-btn--primario" to="/comercial/cotizaciones/nueva">+ Nueva cotización</Link>}
           <span className="comercial-perfil"><i>{esAdmin ? 'AD' : 'AU'}</i>{esAdmin ? 'Administrador' : 'Auxiliar comercial'}</span>
         </div>
       </header>

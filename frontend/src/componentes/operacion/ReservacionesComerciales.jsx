@@ -30,7 +30,7 @@ export default function ReservacionesComerciales({ reservaciones, onAssign, unit
           <summary><strong>{cotizacion.folio} · {cotizacion.cliente.nombre}</strong> · Pendiente de asignación</summary>
           <p>{cotizacion.cliente.telefono} · {cotizacion.cliente.direccion}</p>
           <Link to={'/comercial/cotizaciones/' + cotizacion.id}>Revisar cotización completa</Link>
-          <form onSubmit={event => asignar(event, cotizacion)}>
+          {onAssign ? <form onSubmit={event => asignar(event, cotizacion)}>
             <p>2. Elige una unidad física por equipo. Puedes seleccionar un identificador disponible o escribir uno nuevo para registrarlo. Guardar no inicia la preparación ni confirma la entrega.</p>
             <fieldset disabled={enCurso !== null} className="assignment-fields">
             <div className="form-grid">
@@ -48,7 +48,7 @@ export default function ReservacionesComerciales({ reservaciones, onAssign, unit
             <button className="button dark" type="submit" disabled={enCurso !== null || !cotizacion.lineas.length}>
               {enCurso === cotizacion.id ? 'Guardando…' : 'Guardar asignación'}
             </button>
-          </form>
+          </form> : <p>Solo consulta</p>}
         </details>
       ))}
     </section>

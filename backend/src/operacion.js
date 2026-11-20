@@ -1,5 +1,6 @@
 import { pool } from './db.js';
 import { errorHttp } from './errores.js';
+import { aplicarTaller } from '../../compartido/operacion/taller.js';
 import { applyOperation } from '../../compartido/operacion/operaciones.js';
 import { cotizacionesAprobadas, asignarUnidades, normalizarUnidad } from './reservaciones.js';
 import { listarEquipos, nuevaUnidad } from './catalogo.js';
@@ -63,12 +64,20 @@ export function cargarOperacion() {
   return leerPanel(pool);
 }
 
-export function registrarOperacion(id, accion, campos) {
+export function registrarOperacion(id, accion, campos, autor) {
+  return cambiarEstado(actual => applyOperation(actual, id, accion, campos, autor));
+}
+
+export function registrarTaller(id, accion, campos, autor) {
+  return cambiarEstado(actual => aplicarTaller(actual, id, accion, campos, autor));
+}
+
+function cambiarEstado(aplicar) {
   return transaccion(async db => {
     const actual = await leer(db);
     let data;
     try {
-      data = applyOperation(actual, id, accion, campos);
+      data = aplicar(actual);
     } catch (error) {
       throw errorHttp(409, error.message);
     }
@@ -77,13 +86,13 @@ export function registrarOperacion(id, accion, campos) {
   });
 }
 
-export function crearApartado(cotizacionId, unidades) {
+export function crearApartado(cotizacionId, unidades, autor) {
   return transaccion(async db => {
     const actual = await leer(db);
     if (actual.rentals.some(renta => renta.cotizacionId === cotizacionId)) return leerPanel(db);
     const [cotizacion] = await cotizacionesAprobadas(db, cotizacionId);
     if (!cotizacion) throw errorHttp(404, 'No se encontró una cotización aprobada con ese folio.');
-    await guardar(db, asignarUnidades(actual, cotizacion, unidades));
+    await guardar(db, asignarUnidades(actual, cotizacion, unidades, autor));
     return leerPanel(db);
   });
 }

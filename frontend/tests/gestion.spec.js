@@ -26,7 +26,7 @@ test('preparación detenida permite retomar la revisión sin entregar el equipo'
 
 
 test('error de carga y recuperación sin perder el menú del panel', async ({ page }) => {
-  await page.route('**/api/auth/sesion', route => route.fulfill({ json: { usuario: { id: 1, nombre: 'operativa' } } }));
+  await page.route('**/api/auth/sesion', route => route.fulfill({ json: { usuario: { id: 1, nombre: 'operativa', rol: 'operador' } } }));
   let fallo = true;
   await page.route('**/api/operacion', route => route.fulfill({ status: fallo ? 500 : 200, json: fallo ? { error: 'Sin conexión' } : { units: [], rentals: [], reservaciones: [], catalogo: [] } }));
   await page.goto('/comercial/inicio');

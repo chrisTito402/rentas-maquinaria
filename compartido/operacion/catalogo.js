@@ -1,3 +1,5 @@
+import { rentaVigente } from './taller.js';
+
 const normalizar = valor => String(valor ?? '').trim().toUpperCase();
 
 export function coincideModelo(unidad, equipo) {
@@ -10,7 +12,7 @@ export function resumirCatalogo(catalogo, unidades, reservaciones, rentas) {
   const modelos = new Map(catalogo.map(equipo => [
     equipo.id, { ...equipo, unidades: [], pendientes: 0, disponibles: 0 },
   ]));
-  const activas = new Map(rentas.filter(renta => renta.status !== 'Cerrada')
+  const activas = new Map(rentas.filter(rentaVigente)
     .map(renta => [renta.unit, renta.status]));
   const sinModelo = [];
   for (const registro of unidades) {

@@ -1,6 +1,7 @@
 // Sondeos exploratorios reproducibles. No incrementan los 15 casos de aceptación.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { applyOperation } from '../../compartido/operacion/operaciones.js';
+import { validarFoto } from '../../backend/src/foto.js';
 import { asignarUnidades } from '../../backend/src/reservaciones.js';
 import { asignada, preparar, estadoPara, cotizacion } from './soporte/datos.mjs';
 
@@ -21,16 +22,18 @@ rechazo('EXP-05', '¿La foto rechaza un tipo que no sea imagen admitida?', () =>
   applyOperation(asignada(), 'R-001', 'photo', { image: 'data:text/plain;base64,YQ==' }));
 rechazo('EXP-06', '¿Se impide cerrar fuera de servicio sin identificar quién autorizó?', () =>
   applyOperation(estadoPara('devuelta'), 'R-001', 'close', { mechanic: 'Luis', notes: 'Daño', result: 'Fuera de servicio' }));
-const imagen = applyOperation(asignada(), 'R-001', 'photo', { image: 'data:image/png;base64,YQ==' });
-observaciones.push({ id: 'EXP-07', pregunta: '¿Se comprueba el contenido binario de una imagen que declara ser PNG?',
-  resultado: imagen.rentals[0].documentPhoto.image, estado: 'hallazgo',
-  explicacion: 'La lógica acepta un byte de texto como si fuera PNG. La interfaz procesa imágenes, pero esta capa no decodifica el archivo.' });
-const final = applyOperation(estadoPara('devuelta'), 'R-001', 'close', { mechanic: 'Luis', notes: 'Reparación pendiente', result: 'En mantenimiento' });
+try {
+  await validarFoto('data:image/png;base64,YQ==');
+  observaciones.push({ id: 'EXP-07', estado: 'revisar', resultado: 'Se admitió una foto ilegible' });
+} catch (error) {
+  observaciones.push({ id: 'EXP-07', estado: 'rechazo observado', resultado: error.message });
+}
+const final = applyOperation(estadoPara('devuelta'), 'R-001', 'close', { mechanic: 'Luis', notes: 'Reparación pendiente', result: 'En mantenimiento' }, { by: 'mecanico-prueba', usuarioId: 2 });
 observaciones.push({ id: 'EXP-08', pregunta: '¿Cerrar en mantenimiento libera la unidad como disponible?',
   resultado: { renta: final.rentals[0].status, unidad: final.units[0].state }, estado: 'comportamiento observado' });
 observaciones.push({ id: 'EXP-09', pregunta: '¿El evento identifica la cuenta que inició sesión?',
-  resultado: final.rentals[0].events.at(-1).by, estado: 'hallazgo',
-  explicacion: 'Los eventos usan Administrador de forma constante; la lógica no recibe la identidad de la sesión.' });
+  resultado: final.rentals[0].events.at(-1).by, estado: 'comportamiento observado',
+  explicacion: 'La función conserva el autor proporcionado por el servidor.' });
 
 mkdirSync(new URL('./resultados/', import.meta.url), { recursive: true });
 writeFileSync(new URL('./resultados/exploracion.json', import.meta.url), JSON.stringify({
