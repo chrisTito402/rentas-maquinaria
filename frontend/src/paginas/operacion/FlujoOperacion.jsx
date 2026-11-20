@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, NavLink, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import FichaUnidad from '../../componentes/operacion/FichaUnidad.jsx';
+import ListaInicio from '../../componentes/operacion/ListaInicio.jsx';
 import DatePicker from '../../componentes/operacion/DatePicker.jsx';
 import { Icon } from './Operacion.jsx';
 import './inicio.css';
@@ -74,7 +75,7 @@ export default function FlujoOperacion({ vista }) {
       return next;
     } finally { escritura.current = false; setGuardando(false); }
   }
-  const asignar = (id, unidades) => guardar(() => asignarReservacion(id, unidades), next => ({
+  const asignar = id => guardar(() => asignarReservacion(id), next => ({
     titulo: 'Unidades asignadas', texto: 'La asignación quedó guardada. Cuando estés listo, revisa la preparación de cada equipo.',
     rentas: next.rentals.filter(r => r.cotizacionId === id),
   }));
@@ -94,10 +95,11 @@ export default function FlujoOperacion({ vista }) {
   const unit = rental && data.units.find(u => u.id === rental.unit);
   const pendientes = data?.reservaciones ?? [];
   const activas = data ? rentasEnEtapa(data, 'rentas') : [];
+  const apartadas = data?.rentals.filter(r => r.status === 'Apartado') ?? [];
   const grupos = [
-    { id: 'por-asignar', nombre: 'Reservaciones', icono: 'inbox', registros: pendientes },
+    { id: 'por-asignar', nombre: 'Reservaciones', icono: 'inbox', registros: [...apartadas, ...pendientes.flatMap(c => c.lineas)] },
     { id: 'rentas', nombre: 'Rentas activas', icono: 'swap', registros: activas },
-    { id: 'preparacion', nombre: 'Preparación de equipos', icono: 'tool', registros: data?.rentals.filter(r => ['preparacion', 'listos', 'mantenimiento'].includes(etapaRenta(r).id)) ?? [] },
+    { id: 'preparacion', nombre: 'Preparación de equipos', icono: 'tool', registros: data?.rentals.filter(r => r.status !== 'Apartado' && ['preparacion', 'listos', 'mantenimiento'].includes(etapaRenta(r).id)) ?? [] },
     { id: 'recolecciones', nombre: 'Recolecciones programadas', icono: 'truck', registros: activas.filter(r => r.collection?.date) },
     { id: 'revision', nombre: 'Pendientes de revisión', icono: 'check', registros: data ? rentasEnEtapa(data, 'revision') : [] },
   ];
@@ -133,6 +135,7 @@ export default function FlujoOperacion({ vista }) {
   }
 
   return <>
+    <div key={pathname} className="operacion-desvanecer">
     {errorCarga && <div className="alert" role="alert">{errorCarga} <button className="button soft" onClick={() => setIntento(n => n + 1)}>Volver a intentar</button></div>}
     {cargando || !data ? <p role="status">{errorCarga ? 'Los datos todavía no están disponibles.' : 'Cargando operación…'}</p> : <>
       {aviso}
@@ -146,8 +149,12 @@ export default function FlujoOperacion({ vista }) {
             <span className="inicio-nombre">{g.nombre}</span>{grupo === g.id && <span className="inicio-marca"><Icon name="check" size={16} /></span>}
           </button>)}
         </div>
-        <h2>{seleccionado.nombre}</h2>
-        {grupo === 'por-asignar' ? <ReservacionesComerciales reservaciones={pendientes} onAssign={edita ? asignar : null} units={data.units} /> : listado(grupo, seleccionado.registros)}
+        <div key={grupo} className="operacion-desvanecer">
+          {['por-asignar', 'rentas'].includes(grupo)
+            ? <ListaInicio activas={grupo === 'rentas'} rentas={grupo === 'rentas' ? activas : apartadas}
+                reservaciones={grupo === 'rentas' ? [] : pendientes} units={data.units} asignar={edita ? asignar : null} abrir={abrir} />
+            : <><h2>{seleccionado.nombre}</h2>{listado(grupo, seleccionado.registros)}</>}
+        </div>
         <PendientesEquipo data={data} hoy={dia} />
       </> : page === 'unidad' ? <FichaUnidad key={unidadId} unidad={data.units.find(u => u.id === unidadId)} rentas={data.rentals.filter(r => r.unit === unidadId)} guardar={edita ? taller : null} />
         : page === 'equipos' ? <EquipmentCatalog units={data.units} catalogo={data.catalogo ?? []} reservaciones={pendientes} rentals={data.rentals} onRegister={edita ? registrar : null} />
@@ -169,11 +176,12 @@ export default function FlujoOperacion({ vista }) {
           {page === 'por-asignar' ? <>
             {foco && !confirmacion?.rentas && !pendientes.some(c => String(c.id) === foco) && <section className="flow-notice"><h2>{data.rentals.some(r => String(r.cotizacionId) === foco) ? 'Esta cotización ya tiene unidades asignadas' : 'La cotización no está pendiente de asignación'}</h2><p>Puedes revisar su detalle y continuar desde ahí.</p><Link to={'/comercial/cotizaciones/' + encodeURIComponent(foco)}>Ver cotización →</Link></section>}
             <div className="list-toolbar"><label>Buscar cotización o cliente<input type="search" value={query} onChange={e => setQuery(e.target.value)} /></label></div>
-            <ReservacionesComerciales reservaciones={pendientes.filter(c => normalizar([c.folio, c.cliente.nombre, ...c.lineas.map(l => l.equipo)].join(' ')).includes(normalizar(query)))} onAssign={edita ? asignar : null} units={data.units} foco={foco} />
+            <ReservacionesComerciales reservaciones={pendientes.filter(c => normalizar([c.folio, c.cliente.nombre, ...c.lineas.map(l => l.equipo)].join(' ')).includes(normalizar(query)))} onAssign={edita ? asignar : null} foco={foco} />
           </> : listado(page)}
         </>}
       {modal && rental && createPortal(<div className="operacion gestion"><Modal kind={modal} rental={rental} unit={unit} error={error} busy={guardando} onClose={() => { if (!escritura.current) { setModal(null); setError(''); } }} onSubmit={operar} /></div>, document.body)}
     </>}
+    </div>
   </>;
 }
 

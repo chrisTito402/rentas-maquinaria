@@ -17,13 +17,22 @@ test('OP-01 | aprobar cotización permite asignar sin preparar ni entregar autom
   expect(mock.estado().rentals).toHaveLength(0);
   await page.getByRole('link', { name: 'Continuar a asignación' }).click();
   await expect(page.locator('details.assignment-card')).toHaveAttribute('open', '');
-  await page.locator('input[name="unidad"]').nth(0).fill('MC-01');
-  await page.locator('input[name="unidad"]').nth(1).fill('MC-02');
-  await page.getByRole('button', { name: 'Guardar asignación' }).click();
+  await expect(page.locator('input[name="unidad"]')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Asignar máquinas disponibles' }).click();
   await expect(page.getByRole('heading', { name: 'Unidades asignadas' })).toBeVisible();
   await expect(page).toHaveURL(/por-asignar/);
   await expect(page.getByRole('link', { name: 'Revisar MC-01' })).toBeVisible();
   expect(mock.estado().rentals.every(r => r.status === 'Apartado' && !r.ready && !r.delivery)).toBe(true);
+  await page.goto('/comercial/inicio');
+  const reservas = page.getByRole('region', { name: 'Reservaciones', exact: true });
+  await expect(reservas.getByRole('button', { name: 'Preparar' })).toHaveCount(2);
+  await reservas.getByRole('row').filter({ hasText: 'MC-01' }).getByRole('button').click();
+  await expect(page.getByRole('heading', { name: 'Montacargas', level: 1 })).toBeVisible();
+  mock.iniciarEstado('entregada');
+  await page.goto('/comercial/inicio');
+  await page.getByRole('button', { name: /Rentas activas/ }).click();
+  await page.getByRole('region', { name: 'Rentas activas' }).getByRole('button', { name: 'Ver renta' }).click();
+  await expect(page).toHaveURL(/rentas\/R-001$/);
   expect(mock.errores).toEqual([]);
 });
 
