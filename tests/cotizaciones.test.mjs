@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { app } from '../backend/src/app.js';
 import { query, pool } from '../backend/src/db.js';
+import { listarEquipos } from '../backend/src/catalogo.js';
 import { randomBytes } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { cifrarUsuario, indiceUsuario, hashContrasena } from '../backend/src/auth/credenciales.js';
@@ -90,12 +91,26 @@ test('HU-04 y HU-15a · un id inválido responde 404', async () => {
 });
 
 // Con base de datos
-test('HU-01a · el catálogo trae nombre, tipo, modelo, tarifa por día y foto', async (t) => {
+test('HU-01b · el catálogo consulta la foto y disponibilidad guardadas en la BD', async () => {
+  const guardado = { id: 1, foto: 'https://ejemplo.org/equipo.jpg', disponible: false };
+  const equipos = await listarEquipos({
+    async query(sql) {
+      assert.match(sql, /foto, disponible FROM equipos/);
+      return { rows: [guardado] };
+    },
+  });
+  assert.deepEqual(equipos, [guardado]);
+});
+
+test('HU-01a y HU-01b · el catálogo trae foto y disponibilidad desde la BD', async (t) => {
   if (!hayBase) return t.skip('sin PostgreSQL');
   const { status, datos } = await pedir('GET', '/api/equipos');
   assert.equal(status, 200);
   assert.ok(datos.length > 0);
-  for (const campo of ['id', 'nombre', 'tipo', 'modelo', 'tarifaDia', 'foto']) assert.ok(campo in datos[0]);
+  for (const campo of ['id', 'nombre', 'tipo', 'modelo', 'tarifaDia', 'foto', 'disponible']) assert.ok(campo in datos[0]);
+  const { rows: [guardado] } = await query('SELECT foto, disponible FROM equipos WHERE id = $1', [datos[0].id]);
+  assert.equal(datos[0].foto, guardado.foto);
+  assert.equal(datos[0].disponible, guardado.disponible);
 });
 
 test('HU-04 · la ficha trae características y un equipo que no existe da 404', async (t) => {
@@ -103,6 +118,10 @@ test('HU-04 · la ficha trae características y un equipo que no existe da 404',
   const { status, datos } = await pedir('GET', '/api/equipos/1');
   assert.equal(status, 200);
   assert.ok('caracteristicas' in datos);
+  assert.equal(typeof datos.disponible, 'boolean');
+  const { rows: [guardado] } = await query('SELECT foto, disponible FROM equipos WHERE id = 1');
+  assert.equal(datos.foto, guardado.foto);
+  assert.equal(datos.disponible, guardado.disponible);
   assert.equal((await pedir('GET', '/api/equipos/999999')).status, 404);
 });
 
@@ -239,6 +258,34 @@ test('HU-05 · la misma cotización por /web y por /panel da el mismo total; la 
   assert.match(panel.datos.folio, /^COT-\d{4,}$/);
   const { rows } = await query('SELECT origen, estado FROM cotizaciones WHERE id = $1', [panel.datos.id]);
   assert.deepEqual(rows[0], { origen: 'Panel', estado: 'Pendiente' });
+});
+
+test('HU-07 · sin sesión no se puede descargar ninguna cotización', async () => {
+  const respuesta = await fetch(origen + '/api/cotizaciones/1/pdf');
+  assert.equal(respuesta.status, 401);
+});
+
+test('HU-07 · solo una Aprobada devuelve un PDF descargable', async (t) => {
+  if (!hayBase) return t.skip('sin PostgreSQL');
+  const creada = await pedir('POST', '/api/cotizaciones/web', solicitud);
+  assert.equal(creada.status, 201);
+  t.after(() => borrarCotizacion(creada.datos.id));
+  const ruta = `/api/cotizaciones/${creada.datos.id}/pdf`;
+  const descargar = (url) => fetch(origen + url, { headers: { Cookie: cookie } });
+
+  assert.equal((await descargar('/api/cotizaciones/no/pdf')).status, 400);
+  assert.equal((await descargar('/api/cotizaciones/999999/pdf')).status, 404);
+  const pendiente = await descargar(ruta);
+  assert.equal(pendiente.status, 409);
+  assert.match((await pendiente.json()).error, /Aprobadas/);
+
+  assert.equal((await pedir('PATCH', `/api/cotizaciones/${creada.datos.id}/aprobar`)).status, 200);
+  const respuesta = await descargar(ruta);
+  assert.equal(respuesta.status, 200);
+  assert.match(respuesta.headers.get('content-type'), /application\/pdf/);
+  assert.match(respuesta.headers.get('content-disposition'), new RegExp(`${creada.datos.folio}\\.pdf`));
+  const pdf = Buffer.from(await respuesta.arrayBuffer());
+  assert.ok(pdf.subarray(0, 8).toString().startsWith('%PDF-'));
 });
 
 // Roles · solo el administrador aprueba (notas de la re-presentación del Sprint 1)

@@ -1,0 +1,9 @@
+.acciones-pdf { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.acciones-pdf .f-btn { flex: 1 1 180px; text-align: center; }
+.acciones-pdf p { width: 100%; color: var(--f-texto-2); font-size: 13px; line-height: 1.5; }
+.acciones-pdf p.f-alerta { color: var(--f-error); }
+.detalle-aprobada .acciones-pdf { width: 100%; }
+@media (max-width: 480px) {
+  .acciones-pdf { flex-direction: column; align-items: stretch; }
+  .acciones-pdf .f-btn { flex: auto; }
+}
