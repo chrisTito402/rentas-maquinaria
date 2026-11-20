@@ -42,6 +42,58 @@ cotizaciones aprobadas.
 
 ## Arrancar el proyecto
 
+### Acceso del personal (HU-16 / KAN-17)
+
+El panel `/comercial` requiere iniciar sesión en `/login`. Los enlaces antiguos
+`/admin`, `/gestion` y `/panel/cotizaciones` también terminan en el panel protegido.
+El catálogo, las fichas y `POST /api/cotizaciones/web` continúan públicos.
+La API exige sesión para consultar/aprobar cotizaciones y para toda Operación.
+
+Antes de arrancar el backend, configura `AUTH_KEY`: 32 bytes aleatorios expresados
+como 64 caracteres hexadecimales. Puedes generarlos con:
+
+```sh
+node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
+```
+
+Guarda la clave únicamente en `backend/.env` local o en las variables de entorno
+del servicio de Render. Configura `APP_ORIGIN` con el origen público exacto, sin
+barra final (por ejemplo `https://tu-servicio.onrender.com`); para Vite local usa
+`http://localhost:5173`. Si abres Vite por `127.0.0.1`, usa ese mismo origen.
+No cambies `AUTH_KEY` sin una migración de recifrado: permite descifrar los usuarios
+y calcular su índice de búsqueda. Conserva un respaldo privado de la clave.
+
+Para crear una cuenta, configura temporalmente `AUTH_USUARIO` y
+`AUTH_CONTRASENA` (12 a 256 caracteres) en el entorno del backend y ejecuta:
+
+```sh
+npm run auth:crear-usuario --prefix backend
+```
+
+El comando crea las tablas de autenticación que falten, sin borrar datos ni
+reemplazar cuentas existentes. Retira `AUTH_USUARIO` y `AUTH_CONTRASENA` del entorno
+después. En Render ejecútalo desde la consola del servicio con las mismas variables
+de conexión y clave. No existe una contraseña predeterminada, registro público ni
+recuperación de contraseña. Todas las cuentas tienen acceso al mismo panel.
+
+El nombre de usuario se normaliza a minúsculas y se cifra con AES-256-GCM; un HMAC
+con clave derivada independiente permite buscarlo. Las contraseñas se guardan con
+Argon2id y sal individual. Las sesiones duran ocho horas y se guardan en PostgreSQL
+con el hash del token, mediante cookie HttpOnly y SameSite=Lax (Secure en producción).
+Cerrar sesión revoca el token; desactivar `auth_usuarios.activo` bloquea sus sesiones.
+El login limita a diez intentos por IP cada quince minutos en cada proceso del
+servidor; si se despliega con varias instancias, se requiere un limitador compartido.
+
+La migración `backend/db/auth.sql` se aplica al arrancar en producción y con el
+comando de creación de cuentas en local. No uses `db:crear` para agregar el login.
+Las claves y credenciales nunca se incluyen en el frontend.
+
+Validación: `npm test --prefix backend`, `npm test --prefix frontend`,
+`npm run build --prefix frontend` y `npm run test:e2e --prefix frontend`.
+Los casos de autenticación HTTP usan una base simulada y los de navegador simulan
+la API. Antes de publicar, verifica además en PostgreSQL de pruebas el acceso real,
+la recarga, el cierre y la persistencia de sesiones tras reiniciar el servicio.
+
 ### Publicar en Render
 
 Usa un Web Service con Node, la rama que contenga estos cambios, región Oregon
@@ -126,6 +178,13 @@ de Comercial y los apartados registrados con ellas.
    el Inventario y comprueba que la unidad conserva su estado final.
 
 ## Verificación del flujo
+
+Para presentar las **15 pruebas seleccionadas de Operativa**, consulta
+[`tests/aceptacion-operativa/README.md`](tests/aceptacion-operativa/README.md).
+Incluye justificación, pasos de aceptación, guías exploratorias, resultados reales
+y evidencias. Ejecuta el paquete con `npm run test:aceptacion --prefix frontend`.
+Son siete casos de lógica y ocho de pantalla con API simulada; no reemplazan la
+validación con PostgreSQL real y Render.
 
 Desde `frontend`, `npm test` verifica las transiciones, las etapas de cada
 unidad, la recuperación de mantenimiento y las fechas de devolución.

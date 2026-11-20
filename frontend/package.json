@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "test": "node --import ../tests/alias.mjs --test ../tests/flujo.test.mjs ../tests/validarCliente.test.mjs ../tests/costos.test.mjs ../tests/agregarLinea.test.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test && playwright test --config playwright.aceptacion.config.js",
+    "test:aceptacion": "node ../tests/aceptacion-operativa/ejecutar.mjs"
   },
   "dependencies": {
     "react": "18.3.1",

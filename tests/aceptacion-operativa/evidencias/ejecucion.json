@@ -1,0 +1,16 @@
+{
+  "inicio": "2026-11-20T04:33:39.499Z",
+  "fin": "2026-11-20T04:33:50.666Z",
+  "zonaHoraria": "America/Hermosillo",
+  "node": "v24.20.0",
+  "entorno": "Lógica real en memoria y navegador con API simulada; sin PostgreSQL ni Render",
+  "reglas": {
+    "codigo": 0
+  },
+  "pantallas": {
+    "codigo": 0
+  },
+  "exploracion": {
+    "codigo": 0
+  }
+}

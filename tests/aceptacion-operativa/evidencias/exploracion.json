@@ -1,0 +1,65 @@
+{
+  "fecha": "2026-11-20T04:33:50.651Z",
+  "entorno": "Sondeos de lógica en memoria, sin PostgreSQL ni API HTTP",
+  "observaciones": [
+    {
+      "id": "EXP-01",
+      "pregunta": "¿Se detecta una unidad repetida con distinto uso de espacios y mayúsculas?",
+      "resultado": "Los identificadores de las unidades deben ser válidos y distintos.",
+      "estado": "rechazo observado"
+    },
+    {
+      "id": "EXP-02",
+      "pregunta": "¿Se bloquea reutilizar una unidad ya apartada?",
+      "resultado": "La unidad MC-01 debe estar disponible y corresponder a Montacargas.",
+      "estado": "rechazo observado"
+    },
+    {
+      "id": "EXP-03",
+      "pregunta": "¿Se bloquea registrar dos veces la entrega?",
+      "resultado": "La operación no está disponible en el estado actual.",
+      "estado": "rechazo observado"
+    },
+    {
+      "id": "EXP-04",
+      "pregunta": "¿La responsiva rechaza horómetro negativo?",
+      "resultado": "Revisa la lectura del horómetro.",
+      "estado": "rechazo observado"
+    },
+    {
+      "id": "EXP-05",
+      "pregunta": "¿La foto rechaza un tipo que no sea imagen admitida?",
+      "resultado": "Selecciona una fotografía válida.",
+      "estado": "rechazo observado"
+    },
+    {
+      "id": "EXP-06",
+      "pregunta": "¿Se impide cerrar fuera de servicio sin identificar quién autorizó?",
+      "resultado": "Completa quién autorizó el estado.",
+      "estado": "rechazo observado"
+    },
+    {
+      "id": "EXP-07",
+      "pregunta": "¿Se comprueba el contenido binario de una imagen que declara ser PNG?",
+      "resultado": "data:image/png;base64,YQ==",
+      "estado": "hallazgo",
+      "explicacion": "La lógica acepta un byte de texto como si fuera PNG. La interfaz procesa imágenes, pero esta capa no decodifica el archivo."
+    },
+    {
+      "id": "EXP-08",
+      "pregunta": "¿Cerrar en mantenimiento libera la unidad como disponible?",
+      "resultado": {
+        "renta": "Cerrada",
+        "unidad": "En mantenimiento"
+      },
+      "estado": "comportamiento observado"
+    },
+    {
+      "id": "EXP-09",
+      "pregunta": "¿El evento identifica la cuenta que inició sesión?",
+      "resultado": "Administrador",
+      "estado": "hallazgo",
+      "explicacion": "Los eventos usan Administrador de forma constante; la lógica no recibe la identidad de la sesión."
+    }
+  ]
+}

@@ -1,13 +1,23 @@
 // Menú lateral del panel comercial (frames «1 · Bandeja de solicitudes» y «2 · Detalle de solicitud» del Figma).
 // Reúne Comercial y Operación: las pantallas de Operación conservan su estilo dentro de .operacion.
-// En el Sprint 1 el panel todavía no pide usuario: el acceso llega con HU-16.
-import { useEffect } from 'react';
+// HU-16: sesión del personal validada en el servidor.
+import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import ProximoSprint from '../../componentes/ProximoSprint.jsx';
+import { useSesion } from '../../auth/Sesion.jsx';
 import '../operacion/operacion.css';
 import '../../componentes/gestion.css';
 
 export default function PanelLayout() {
+  const { usuario, salir } = useSesion();
+  const [error, setError] = useState('');
+  const [cerrando, setCerrando] = useState(false);
+  async function cerrarSesion() {
+    setCerrando(true);
+    setError('');
+    try { await salir(); }
+    catch { setError('No se pudo cerrar la sesión. Intenta de nuevo.'); }
+    finally { setCerrando(false); }
+  }
   const { pathname } = useLocation();
   const cotizaciones = pathname.startsWith('/comercial/cotizaciones');
   const operacion = pathname.startsWith('/comercial/operacion') || pathname.startsWith('/comercial/rentas/');
@@ -27,12 +37,11 @@ export default function PanelLayout() {
           <NavLink to="/comercial/inventario">Inventario</NavLink>
           <NavLink to="/comercial/historial">Historial</NavLink>
         </nav>
-        <ProximoSprint hu="HU-16" kan="KAN-17" titulo="Acceso con usuario">
-          El panel pedirá iniciar sesión para que solo entre el personal.
-        </ProximoSprint>
         <div className="comercial-menu__perfil">
-          <strong>Área comercial</strong>
-          <span>Administrador</span>
+          <strong>{usuario.nombre}</strong>
+          <span>Personal interno</span>
+          <button type="button" className="acceso-salir" onClick={cerrarSesion} disabled={cerrando}>{cerrando ? 'Cerrando sesión…' : 'Cerrar sesión'}</button>
+          {error && <p role="alert">{error}</p>}
           <Link to="/">Ver catálogo público ↗</Link>
         </div>
       </aside>

@@ -3,21 +3,39 @@ import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { app } from '../backend/src/app.js';
 import { query, pool } from '../backend/src/db.js';
+import { randomBytes } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import { cifrarUsuario, indiceUsuario, hashContrasena } from '../backend/src/auth/credenciales.js';
+import { hashToken, nombreCookie } from '../backend/src/auth/sesion.js';
 
 // Pruebas de la API comercial: HU-01a, HU-04, HU-14a y HU-15a.
 // Las que guardan datos usan la base de backend/.env y borran lo que crean.
 let servidor;
 let origen;
 let hayBase = true;
+let cookie = '';
+let cuentaId;
 
 test.before(async () => {
   servidor = app.listen(0, '127.0.0.1');
   await once(servidor, 'listening');
   origen = `http://127.0.0.1:${servidor.address().port}`;
   try { await query('SELECT 1'); } catch { hayBase = false; }
+  if (hayBase) {
+    process.env.AUTH_KEY ||= randomBytes(32).toString('hex');
+    await query(await readFile(new URL('../backend/db/auth.sql', import.meta.url), 'utf8'));
+    const usuario = 'prueba-' + randomBytes(8).toString('hex');
+    const { rows } = await query('INSERT INTO auth_usuarios (usuario_cifrado, usuario_indice, contrasena_hash) VALUES ($1, $2, $3) RETURNING id',
+      [cifrarUsuario(usuario), indiceUsuario(usuario), await hashContrasena(randomBytes(32).toString('hex'))]);
+    cuentaId = rows[0].id;
+    const token = randomBytes(32).toString('hex');
+    await query("INSERT INTO auth_sesiones (token_hash, usuario_id, vence_en) VALUES ($1, $2, NOW() + INTERVAL '1 hour')", [hashToken(token), cuentaId]);
+    cookie = `${nombreCookie()}=${token}`;
+  }
 });
 
 test.after(async () => {
+  if (cuentaId) await query('DELETE FROM auth_usuarios WHERE id = $1', [cuentaId]);
   await new Promise((listo) => servidor.close(listo));
   await pool.end();
 });
@@ -25,7 +43,7 @@ test.after(async () => {
 const pedir = async (metodo, ruta, cuerpo) => {
   const respuesta = await fetch(origen + ruta, {
     method: metodo,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', Cookie: cookie },
     body: cuerpo && JSON.stringify(cuerpo),
   });
   return { status: respuesta.status, datos: await respuesta.json() };
@@ -68,7 +86,7 @@ test('HU-14a · rechaza cantidades fuera de 1 a 20, fechas al revés y notas de 
 
 test('HU-04 y HU-15a · un id inválido responde 404', async () => {
   assert.equal((await pedir('GET', '/api/equipos/abc')).status, 404);
-  assert.equal((await pedir('PATCH', '/api/cotizaciones/abc/aprobar')).status, 404);
+  assert.equal((await pedir('PATCH', '/api/cotizaciones/abc/aprobar')).status, hayBase ? 404 : 401);
 });
 
 // Con base de datos

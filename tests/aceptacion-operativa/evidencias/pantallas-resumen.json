@@ -1,0 +1,60 @@
+{
+  "estadisticas": {
+    "startTime": "2026-11-20T04:33:40.422Z",
+    "duration": 9983.542,
+    "expected": 8,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "casos": [
+    {
+      "id": "OP-01",
+      "titulo": "OP-01 | aprobar cotización permite asignar sin preparar ni entregar automáticamente",
+      "estado": "passed",
+      "duracionMs": 7481
+    },
+    {
+      "id": "OP-08",
+      "titulo": "OP-08 | generar y visualizar carta responsiva en modo impresión",
+      "estado": "passed",
+      "duracionMs": 4444
+    },
+    {
+      "id": "OP-09",
+      "titulo": "OP-09 | fotografía de responsiva recuperable después de recargar",
+      "estado": "passed",
+      "duracionMs": 7279
+    },
+    {
+      "id": "OP-10",
+      "titulo": "OP-10 | entrega actualiza renta y unidad, conserva URL y sobrevive a recarga",
+      "estado": "passed",
+      "duracionMs": 3701
+    },
+    {
+      "id": "OP-12",
+      "titulo": "OP-12 | cierre libera inventario, conserva eventos y aparece en historial y cotización",
+      "estado": "passed",
+      "duracionMs": 5090
+    },
+    {
+      "id": "OP-13",
+      "titulo": "OP-13 | guardar con error conserva campos y permite reintentar sin avance falso",
+      "estado": "passed",
+      "duracionMs": 7208
+    },
+    {
+      "id": "OP-14",
+      "titulo": "OP-14 | navegación móvil, accesos anteriores y recarga de enlaces privados",
+      "estado": "passed",
+      "duracionMs": 3727
+    },
+    {
+      "id": "OP-15",
+      "titulo": "OP-15 | calendario y formularios utilizables con teclado en móvil",
+      "estado": "passed",
+      "duracionMs": 2903
+    }
+  ]
+}
