@@ -7,6 +7,7 @@ import Operacion from './paginas/operacion/FlujoOperacion.jsx';
 import PanelLayout from './paginas/comercial/PanelLayout.jsx';
 import CotizacionesComercial from './paginas/comercial/Cotizaciones.jsx';
 import DetalleCotizacionComercial from './paginas/comercial/DetalleCotizacion.jsx';
+import NuevaCotizacion from './paginas/comercial/NuevaCotizacion.jsx';
 import Login from './auth/Login.jsx';
 import { RequiereSesion } from './auth/Sesion.jsx';
 
@@ -33,6 +34,7 @@ export default function App() {
         <Route index element={<Navigate to="inicio" replace />} />
         <Route path="inicio" element={<Operacion vista="inicio" />} />
         <Route path="cotizaciones" element={<CotizacionesComercial />} />
+        <Route path="cotizaciones/nueva" element={<NuevaCotizacion />} />
         <Route path="cotizaciones/:id" element={<DetalleCotizacionComercial />} />
         <Route path="operacion" element={<Navigate to="por-asignar" replace />} />
         <Route path="operacion/:seccion" element={<Operacion />} />

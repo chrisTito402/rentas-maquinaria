@@ -52,12 +52,11 @@ export default function Cotizaciones() {
           <h1>Cotizaciones</h1>
           <p>Consulta y da seguimiento a las cotizaciones.</p>
         </div>
-        <span className="comercial-perfil"><i>AD</i>Administrador</span>
+        <div className="comercial-encabezado__acciones">
+          <Link className="f-btn f-btn--primario" to="/comercial/cotizaciones/nueva">+ Nueva cotización</Link>
+          <span className="comercial-perfil"><i>AD</i>Administrador</span>
+        </div>
       </header>
-
-      <ProximoSprint hu="HU-05" kan="KAN-13" titulo="Nueva cotización desde el panel" duenio="Katia" className="comercial-proximo">
-        Un botón para capturar aquí las cotizaciones que piden los clientes por teléfono.
-      </ProximoSprint>
 
       <section className="f-tarjeta bandeja">
         <div className="bandeja__filtros">
