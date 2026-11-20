@@ -19,7 +19,7 @@ export function SesionProvider({ children }) {
     } finally { setCargando(false); }
   }
   useEffect(() => {
-    consultar();
+    void consultar();
     const expirada = () => { setUsuario(null); setError(''); };
     window.addEventListener('sesion-expirada', expirada);
     return () => window.removeEventListener('sesion-expirada', expirada);
