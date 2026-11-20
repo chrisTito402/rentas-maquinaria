@@ -11,7 +11,9 @@ export async function cotizacionesAprobadas(db, id = null) {
   const { rows } = await db.query(`
     SELECT c.id, COALESCE(c.folio, 'COT-' || c.id) AS folio,
            jsonb_build_object('nombre', cl.nombre, 'telefono', trim(cl.telefono),
-                              'correo', cl.correo, 'direccion', cl.direccion,
+                              'correo', cl.correo,
+                              -- A4: la dirección de entrega incluye colonia y C.P. cuando existen.
+                              'direccion', concat_ws(', ', cl.direccion, 'Col. ' || cl.colonia, 'C.P. ' || cl.codigo_postal),
                               'municipio', cl.municipio) AS cliente,
            COALESCE(jsonb_agg(jsonb_build_object('id', ce.id, 'equipoId', e.id,
                     'equipo', e.nombre, 'modelo', e.modelo, 'tipo', e.tipo,

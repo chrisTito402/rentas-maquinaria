@@ -1,10 +1,16 @@
 // Dueño: Katia · A4 Código postal (HU-06)
 import { Router } from 'express';
+import { rateLimit } from 'express-rate-limit';
 import { query } from '../db.js';
 import { errorHttp } from '../errores.js';
 import { buscarCodigoPostal, hayCatalogo } from '../codigosPostales.js';
 
 const r = Router();
+
+// La licencia de Correos no permite redistribuir el catálogo: se limita la consulta para que
+// no se pueda descargar completo pidiendo un código postal tras otro.
+r.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 150, standardHeaders: 'draft-7', legacyHeaders: false,
+  message: { error: 'Demasiadas consultas de códigos postales. Intenta de nuevo en unos minutos.' } }));
 
 // GET /api/codigos-postales/85000  (pública: la usa el formulario del cliente)
 // regresa 200: { codigoPostal, municipio, estado, colonias: [...] }

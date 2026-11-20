@@ -29,8 +29,9 @@ export default function FormularioCliente({ valores, errores = {}, onCambio }) {
     onCambio('codigoPostal', codigoPostal);
     ultimo.current = codigoPostal;
     setAvisoCp('');
-    if (info) { setInfo(null); onCambio('colonia', ''); }
-    if (codigoPostal.length !== 5) return;
+    // Al cambiar el C.P. se borran el municipio y la colonia que se habían llenado con el anterior.
+    if (info) { setInfo(null); onCambio('colonia', ''); onCambio('municipio', ''); }
+    if (codigoPostal.length !== 5) { setBuscando(false); return; }
     setBuscando(true);
     try {
       const datos = await api.get(`/codigos-postales/${codigoPostal}`);

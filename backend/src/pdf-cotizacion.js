@@ -89,7 +89,13 @@ function dibujar(doc, cotizacion, logoPng) {
   const empresa = cliente.empresa || 'Particular';
   const telefono = cliente.telefono;
   const correo = cliente.correo;
-  const destino = `${cliente.municipio} · ${cliente.direccion}`;
+  // A4: calle y número, colonia, municipio y C.P. (las cotizaciones anteriores no tienen colonia ni C.P.).
+  const destino = [
+    cliente.direccion,
+    cliente.colonia && `Col. ${cliente.colonia}`,
+    `${cliente.municipio}, Sonora`,
+    cliente.codigoPostal && `C.P. ${cliente.codigoPostal}`,
+  ].filter(Boolean).join(' · ');
   const alturaPrimera = Math.max(medirCampo(doc, nombre, ancho), medirCampo(doc, empresa, ancho));
   const alturaSegunda = Math.max(medirCampo(doc, telefono, ancho), medirCampo(doc, correo, ancho));
   const alturaDestino = medirCampo(doc, destino, 475);
