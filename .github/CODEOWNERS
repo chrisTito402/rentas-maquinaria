@@ -30,6 +30,7 @@
 /backend/src/rutas/ocupadas.rutas.js           @chrisTito402
 /compartido/ocupadas.js                        @chrisTito402
 /frontend/src/componentes/CalendarioRango.jsx  @chrisTito402
+/frontend/src/componentes/ElegirMunicipio.jsx  @chrisTito402
 
 # Katia · HU-05, HU-16
 /backend/src/rutas/panel.rutas.js              @katianavarez

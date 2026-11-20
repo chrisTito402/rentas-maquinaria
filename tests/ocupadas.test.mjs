@@ -31,3 +31,26 @@ test('buscarChoque regresa el rango con el que choca y el mensaje dice las fecha
   assert.equal(mensajeChoque(choque), 'Este equipo ya está rentado del 25/11/2026 al 27/11/2026.');
   assert.equal(buscarChoque({ fechaInicio: '2026-12-01', fechaFin: '2026-12-02' }, [apartado]), null);
 });
+
+test('con un inicio elegido, el rango se detiene el día antes del siguiente apartado', async () => {
+  const { limiteFin, avisoLimite } = await import('../compartido/ocupadas.js');
+  const ocupados = [{ inicio: '2026-10-20', fin: '2026-10-22' }, { inicio: '2026-10-28', fin: '2026-10-29' }];
+  assert.deepEqual(limiteFin('2026-10-18', ocupados), { hasta: '2026-10-19', rango: ocupados[0] });
+  assert.equal(avisoLimite('2026-10-18', ocupados), 'Con inicio el 18 puedes rentar hasta el 19: del 20 al 22 ya está rentado.');
+  assert.equal(limiteFin('2026-10-23', ocupados).hasta, '2026-10-27');
+  assert.equal(limiteFin('2026-10-30', ocupados), null);
+  assert.equal(avisoLimite('', ocupados), '');
+});
+
+test('el día anterior cruza bien el cambio de mes', async () => {
+  const { diaAnterior } = await import('../compartido/ocupadas.js');
+  assert.equal(diaAnterior('2026-12-01'), '2026-11-30');
+});
+
+test('si el apartado cruza de mes, el aviso dice el mes', async () => {
+  const { avisoLimite } = await import('../compartido/ocupadas.js');
+  assert.equal(
+    avisoLimite('2026-11-24', [{ inicio: '2026-11-27', fin: '2026-12-01' }]),
+    'Con inicio el 24 de noviembre puedes rentar hasta el 26 de noviembre: del 27 de noviembre al 1 de diciembre ya está rentado.',
+  );
+});

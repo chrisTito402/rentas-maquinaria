@@ -1,6 +1,6 @@
 // Dueño: Chris · HU-14a Enviar solicitud de cotización (KAN-11) y HU-13b Costo de envío por zona (KAN-53)
 // Diseño: frames «3 · Solicitud de cotización», «4 · Solicitud enviada (cliente)» y «E1 · Cotización vacía» del Figma.
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCarrito } from '../carrito/CarritoContext.jsx';
 import { api } from '../api.js';
@@ -18,8 +18,10 @@ const ETIQUETAS = { nombre: 'Nombre', telefono: 'Teléfono', correo: 'Correo', e
 const corta = (iso) => new Date(`${iso}T12:00:00`).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
 
 export default function MiCotizacion() {
-  const { lineas, quitar, vaciar } = useCarrito();
-  const [cliente, setCliente] = useState(CLIENTE_INICIAL);
+  const { lineas, quitar, vaciar, municipio, setMunicipio } = useCarrito();
+  // HU-13b: el municipio llega del catálogo (encabezado o diálogo) y si se cambia aquí se recalcula el envío.
+  const [cliente, setCliente] = useState(() => ({ ...CLIENTE_INICIAL, municipio }));
+  useEffect(() => { setCliente((actual) => ({ ...actual, municipio })); }, [municipio]);
   const [notas, setNotas] = useState('');
   const [errores, setErrores] = useState({});
   const [error, setError] = useState('');
@@ -102,7 +104,7 @@ export default function MiCotizacion() {
             <h2>Tus datos de contacto</h2>
             <p>Todos los campos son obligatorios, salvo Empresa y las notas.</p>
           </header>
-          <FormularioCliente valores={cliente} errores={errores} onCambio={(campo, valor) => setCliente((actual) => ({ ...actual, [campo]: valor }))} />
+          <FormularioCliente valores={cliente} errores={errores} onCambio={(campo, valor) => (campo === 'municipio' ? setMunicipio(valor) : setCliente((actual) => ({ ...actual, [campo]: valor })))} />
           <div className="f-campo">
             <label htmlFor="notas">Notas de entrega u obra <span className="f-campo__ayuda">(opcional)</span></label>
             <textarea id="notas" value={notas} maxLength={MAX_NOTAS} onChange={(evento) => setNotas(evento.target.value)} aria-describedby="ayuda-notas"

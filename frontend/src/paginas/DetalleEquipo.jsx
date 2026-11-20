@@ -1,18 +1,20 @@
 // Dueño: Héctor · HU-04 Ver detalle del equipo (KAN-8)
 // Diseño: frames «2 · Detalle del equipo» y «Ficha · Estado sin fechas (HU-04)» del Figma.
 // HU-02a (Chris): el calendario marca los días ocupados («Ficha · Estado fechas ocupadas (HU-02a)»).
+// HU-13b (Chris): envío por municipio y diálogo al agregar («2c · Detalle sin municipio», «2d», «M4»).
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useCarrito } from '../carrito/CarritoContext.jsx';
 import DesgloseCostos from '../componentes/DesgloseCostos.jsx';
 import CalendarioRango from '../componentes/CalendarioRango.jsx';
+import ElegirMunicipio from '../componentes/ElegirMunicipio.jsx';
 import Maquina from '../componentes/Maquina.jsx';
 import ProximoSprint from '../componentes/ProximoSprint.jsx';
 import { imagenEquipo, partesCaracteristicas } from '../logica/imagenEquipo.js';
 import { MAX_CANTIDAD } from '@compartido/constantes.js';
-import { contarDias } from '@compartido/costos.js';
-import { buscarChoque, mensajeChoque } from '@compartido/ocupadas.js';
+import { calcularEnvio, contarDias } from '@compartido/costos.js';
+import { avisoLimite, buscarChoque, mensajeChoque } from '@compartido/ocupadas.js';
 import { dinero, fecha } from '@compartido/formato.js';
 
 const rangoCorto = (inicio, fin) => {
@@ -22,7 +24,9 @@ const rangoCorto = (inicio, fin) => {
 
 export default function DetalleEquipo() {
   const { id } = useParams();
-  const { agregar } = useCarrito();
+  const { agregar, municipio, setMunicipio } = useCarrito();
+  const [eligiendo, setEligiendo] = useState(false);   // HU-13b: diálogo del municipio
+  const [agregarAlElegir, setAgregarAlElegir] = useState(false);
   const [equipo, setEquipo] = useState(null);
   const [error, setError] = useState('');
   const [cantidad, setCantidad] = useState(1);
@@ -58,6 +62,12 @@ export default function DetalleEquipo() {
   function agregarEquipo() {
     const choque = buscarChoque({ fechaInicio, fechaFin }, ocupados);
     if (choque) { setAviso(mensajeChoque(choque)); return; }
+    // HU-13b: sin municipio, primero se pregunta a dónde llevar el equipo (frame «2d»).
+    if (!municipio) { setAgregarAlElegir(true); setEligiendo(true); return; }
+    meterALaCotizacion();
+  }
+
+  function meterALaCotizacion() {
     agregar({
       equipoId: equipo.id, nombre: equipo.nombre, foto: imagenEquipo(equipo), tarifaDia: equipo.tarifaDia,
       cantidad, fechaInicio, fechaFin,
@@ -116,7 +126,9 @@ export default function DetalleEquipo() {
           <div className="ficha-seccion-titulo">
             <div>
               <strong>Elige tus fechas</strong>
-              <small>Toca el primer día de renta y luego el último.</small>
+              {fechaInicio && !fechaFin && avisoLimite(fechaInicio, ocupados)
+                ? <small className="ficha-aviso-rango">{avisoLimite(fechaInicio, ocupados)}</small>
+                : <small>Toca el primer día de renta y luego el último.</small>}
             </div>
           </div>
           <CalendarioRango
@@ -133,7 +145,12 @@ export default function DetalleEquipo() {
               <output aria-live="polite">{cantidad}</output>
               <button type="button" onClick={() => cambiarCantidad(cantidad + 1)} disabled={cantidad >= MAX_CANTIDAD} aria-label="Agregar una unidad">+</button>
             </div>
-            <span className="ficha-cantidad__nota">Máximo {MAX_CANTIDAD} unidades.</span>
+            <span className="ficha-cantidad__nota">
+              Máximo {MAX_CANTIDAD} unidades.{' '}
+              {municipio && !calcularEnvio(municipio, 1).fueraDeZona
+                ? `Envío: ${dinero(calcularEnvio(municipio, 1).tarifa).replace('.00', '')} por unidad a ${municipio}.`
+                : 'El envío depende del municipio de entrega.'}
+            </span>
           </div>
 
           <div className="ficha-costo">
@@ -142,7 +159,8 @@ export default function DetalleEquipo() {
               {fechasValidas && <span>{rangoCorto(fechaInicio, fechaFin)}</span>}
             </div>
             {fechasValidas
-              ? <DesgloseCostos detalle lineas={[{ nombre: equipo.nombre, tarifaDia: equipo.tarifaDia, cantidad, fechaInicio, fechaFin }]} />
+              ? <DesgloseCostos detalle municipio={municipio} onElegirMunicipio={() => setEligiendo(true)}
+                lineas={[{ nombre: equipo.nombre, tarifaDia: equipo.tarifaDia, cantidad, fechaInicio, fechaFin }]} />
               : <p className="f-campo__ayuda">Elige la fecha de inicio y la de fin para ver el costo.</p>}
           </div>
 
@@ -159,6 +177,19 @@ export default function DetalleEquipo() {
           )}
         </aside>
       </div>
+      <ElegirMunicipio
+        abierto={eligiendo} valor={municipio}
+        accion={agregarAlElegir ? 'Agregar a mi cotización' : 'Guardar'}
+        onElegir={(m) => {
+          setMunicipio(m);
+          setEligiendo(false);
+          if (agregarAlElegir) {
+            setAgregarAlElegir(false);
+            meterALaCotizacion();
+          }
+        }}
+        onCerrar={() => { setEligiendo(false); setAgregarAlElegir(false); }}
+      />
     </>
   );
 }

@@ -235,8 +235,10 @@ body:has(.sitio), body:has(.comercial) { margin: 0; background: var(--f-fondo); 
 .calendario__leyenda { display: flex; gap: 14px; align-items: center; margin-top: 10px; font-size: 12px; color: var(--f-texto-2); }
 .calendario__leyenda i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: var(--f-accion); margin-right: 6px; vertical-align: -1px; }
 /* HU-02a · días en que el equipo ya está apartado */
-.calendario__dia--ocupado, .calendario__dia--ocupado:hover { background: #e5e7eb; color: #9ca3af; text-decoration: line-through; cursor: not-allowed; }
-.calendario__leyenda i.calendario__leyenda--ocupado { background: #e5e7eb; border: 1px solid #d1d5db; }
+.calendario__dia--ocupado, .calendario__dia--ocupado:hover { background: #e2e8f0; color: #64748b; text-decoration: line-through; border-radius: var(--f-r-sm); cursor: not-allowed; }
+/* con el inicio elegido, los días después del bloque ocupado no pueden ser el fin */
+.calendario__dia--fuera, .calendario__dia--fuera:hover { background: none; color: #cbd5e1; cursor: not-allowed; }
+.calendario__leyenda i.calendario__leyenda--ocupado { background: #e2e8f0; }
 
 /* Solicitud de cotización */
 .solicitud-intro { display: flex; flex-direction: column; gap: 10px; margin: 8px 0 32px; }
@@ -404,3 +406,49 @@ body:has(.sitio), body:has(.comercial) { margin: 0; background: var(--f-fondo); 
   .comercial-menu nav a { padding: 8px 10px; font-size: 14px; }
 }
 .detalle__columna { min-width: 0; }
+
+/* HU-13b · Municipio de entrega: botón del encabezado y diálogo «2d» / hoja inferior «M4» */
+.sitio-municipio { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #fed7aa; background: var(--f-accion-suave); color: var(--f-accion); font: inherit; font-size: 13px; font-weight: 600; border-radius: 999px; padding: 6px 12px; cursor: pointer; white-space: nowrap; }
+.sitio-municipio img { width: 14px; height: 14px; }
+.sitio-municipio__largo span { color: var(--f-texto-2); font-weight: 500; }
+.sitio-municipio__corto { display: none; }
+.sitio-municipio:hover { border-color: var(--f-accion); }
+.dialogo-fondo { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgba(15, 23, 42, .45); }
+.dialogo { width: min(100%, 420px); max-height: calc(100vh - 32px); overflow-y: auto; background: var(--f-blanco); border-radius: var(--f-r-lg); box-shadow: var(--f-sombra-hover); padding: 24px; }
+.dialogo h2 { margin: 0 0 6px; font-size: 20px; }
+.dialogo > p { margin: 0 0 16px; font-size: 14px; color: var(--f-texto-2); }
+.dialogo__asa { display: none; }
+.municipios { border: 1px solid var(--f-borde); border-radius: var(--f-r-md); padding: 4px 0; margin: 0 0 16px; }
+.municipios legend { font-size: 14px; font-weight: 700; padding: 0 4px; }
+.municipios__opcion { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 14px; font-size: 15px; cursor: pointer; }
+.municipios__opcion { position: relative; }
+.municipios__opcion input { position: absolute; left: 0; top: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.municipios__opcion small { font-size: 13px; color: var(--f-texto-2); white-space: nowrap; }
+.municipios__opcion:hover, .municipios__opcion:focus-within { background: var(--f-fondo); }
+.municipios__opcion--elegida { background: var(--f-accion-suave) !important; }
+.municipios__opcion--elegida small { color: var(--f-accion); font-weight: 700; }
+.municipios__opcion--fuera small { color: var(--f-error); }
+.dialogo__acciones { display: flex; justify-content: flex-end; gap: 10px; }
+.f-boton-enlace { border: 0; background: none; padding: 0; font: inherit; font-weight: 700; color: var(--f-accion); cursor: pointer; }
+@media (max-width: 600px) {
+  /* en celular el botón del municipio queda solo con el ícono para que quepa el encabezado */
+  .sitio-municipio { padding: 0; width: 36px; height: 36px; justify-content: center; flex: none; }
+  .sitio-municipio img { width: 18px; height: 18px; }
+  .sitio-municipio__largo, .sitio-municipio__corto { display: none; }
+  .sitio-nav__cotizacion { padding: 8px 10px !important; }
+  .dialogo-fondo { place-items: end stretch; padding: 0; }
+  .dialogo { width: 100%; max-height: 85vh; border-radius: 20px 20px 0 0; padding: 12px 20px 20px; }
+  .dialogo__asa { display: block; width: 40px; height: 4px; border-radius: 4px; background: var(--f-borde-input); margin: 0 auto 14px; }
+  .dialogo__acciones { position: sticky; bottom: 0; background: var(--f-blanco); padding-top: 10px; }
+  .dialogo__acciones .f-btn { flex: 1; }
+}
+
+.ficha-aviso-rango { color: #c2410c !important; font-weight: 500; }
+@media (max-width: 600px) {
+  /* el nombre se recorta antes de empujar los botones fuera de la pantalla */
+  .sitio-marca { min-width: 0; flex: 1 1 auto; overflow: hidden; }
+  .sitio-marca > span:last-child { min-width: 0; overflow: hidden; }
+  .sitio-marca__nombre { display: block; overflow: hidden; text-overflow: ellipsis; }
+  .sitio-nav { flex: none; }
+  .sitio-encabezado__fila { gap: 8px; }
+}
