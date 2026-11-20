@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, NavLink, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import FichaUnidad from '../../componentes/operacion/FichaUnidad.jsx';
+import DatePicker from '../../componentes/operacion/DatePicker.jsx';
+import { Icon } from './Operacion.jsx';
+import './inicio.css';
 import PendientesEquipo from '../../componentes/operacion/PendientesEquipo.jsx';
 import { api } from '../../api.js';
 import EquipmentCatalog from '../../componentes/operacion/EquipmentCatalog.jsx';
@@ -22,6 +25,8 @@ export default function FlujoOperacion({ vista }) {
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const page = vista || seccion;
+  const [grupo, setGrupo] = useState('por-asignar');
+  const [dia, setDia] = useState(() => new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Hermosillo' }));
   const [data, setData] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [errorCarga, setErrorCarga] = useState('');
@@ -88,6 +93,15 @@ export default function FlujoOperacion({ vista }) {
   const rental = data?.rentals.find(r => r.id === rentaId);
   const unit = rental && data.units.find(u => u.id === rental.unit);
   const pendientes = data?.reservaciones ?? [];
+  const activas = data ? rentasEnEtapa(data, 'rentas') : [];
+  const grupos = [
+    { id: 'por-asignar', nombre: 'Reservaciones', icono: 'inbox', registros: pendientes },
+    { id: 'rentas', nombre: 'Rentas activas', icono: 'swap', registros: activas },
+    { id: 'preparacion', nombre: 'Preparación de equipos', icono: 'tool', registros: data?.rentals.filter(r => ['preparacion', 'listos', 'mantenimiento'].includes(etapaRenta(r).id)) ?? [] },
+    { id: 'recolecciones', nombre: 'Recolecciones programadas', icono: 'truck', registros: activas.filter(r => r.collection?.date) },
+    { id: 'revision', nombre: 'Pendientes de revisión', icono: 'check', registros: data ? rentasEnEtapa(data, 'revision') : [] },
+  ];
+  const seleccionado = grupos.find(g => g.id === grupo);
   const foco = new URLSearchParams(search).get('cotizacion');
   const aviso = confirmacion && <section className="flow-notice" role="status">
     <div className="persistent-success"><h2>{confirmacion.titulo}</h2><button className="button plain compact" onClick={() => setConfirmacion(null)} aria-label="Cerrar confirmación">Cerrar</button></div>
@@ -96,8 +110,8 @@ export default function FlujoOperacion({ vista }) {
   </section>;
   const abrir = id => navigate('/comercial/rentas/' + encodeURIComponent(id));
 
-  function listado(bucket) {
-    const items = rentasEnEtapa(data, bucket).filter(r => {
+  function listado(bucket, registros = rentasEnEtapa(data, bucket)) {
+    const items = registros.filter(r => {
       const u = data.units.find(u => u.id === r.unit);
       return normalizar([r.id, r.commercial, r.client, u?.name, r.unit].join(' ')).includes(normalizar(query));
     }).sort((a, b) => sort === 'fecha' ? a.end.localeCompare(b.end) : a.id.localeCompare(b.id));
@@ -123,13 +137,18 @@ export default function FlujoOperacion({ vista }) {
     {cargando || !data ? <p role="status">{errorCarga ? 'Los datos todavía no están disponibles.' : 'Cargando operación…'}</p> : <>
       {aviso}
       {page === 'inicio' ? <>
-        <div className="page-heading"><div><p className="eyebrow">TU ESPACIO DE TRABAJO</p><h1>Una renta, paso a paso</h1><p className="section-intro">Empieza por una cotización o retoma una operación pendiente. Cada equipo muestra qué sigue.</p></div></div>
-        <ol className="workflow-steps" aria-label="Recorrido de una renta">{['Revisar cotización', 'Asignar unidades', 'Preparar y entregar', 'Registrar regreso', 'Revisar y cerrar'].map((s, i) => <li key={s}><span>PASO {i + 1}</span>{s}</li>)}</ol>
-        <div className="home-grid">
-          <Link className="home-card" to="/comercial/cotizaciones"><span>COMERCIAL</span><h2>Revisar cotizaciones</h2><p>{usuario.rol === 'admin' ? 'Consulta las solicitudes del cliente y aprueba las que pasarán a Operación.' : 'Consulta el folio, los equipos y el estado de cada solicitud.'}</p><strong>Ir a cotizaciones →</strong></Link>
-          {etapas.map(e => <Link key={e.id} className="home-card" to={'/comercial/operacion/' + e.id}><span className="home-count">{e.id === 'por-asignar' ? pendientes.length : rentasEnEtapa(data, e.id).length}</span><h2>{e.titulo}</h2><p>{e.descripcion}</p><strong>{e.id === 'por-asignar' ? 'Ver cotizaciones' : 'Ver equipos'} →</strong></Link>)}
+        <header className="inicio-cabecera"><div><h1>Inicio</h1><p>¿Qué necesitas revisar?</p></div>
+          <DatePicker label="Fecha de la agenda" defaultValue={dia} onChange={setDia} mostrarDia />
+        </header>
+        <div className="inicio-menu" role="group" aria-label="Pendientes de operaciones">
+          {grupos.map(g => <button key={g.id} type="button" aria-pressed={grupo === g.id} onClick={() => { setGrupo(g.id); setQuery(''); setPagina(1); }}>
+            <span className="inicio-icono"><Icon name={g.icono} /></span><strong className="home-count">{g.registros.length}</strong>
+            <span className="inicio-nombre">{g.nombre}</span>{grupo === g.id && <span className="inicio-marca"><Icon name="check" size={16} /></span>}
+          </button>)}
         </div>
-        <PendientesEquipo data={data} />
+        <h2>{seleccionado.nombre}</h2>
+        {grupo === 'por-asignar' ? <ReservacionesComerciales reservaciones={pendientes} onAssign={edita ? asignar : null} units={data.units} /> : listado(grupo, seleccionado.registros)}
+        <PendientesEquipo data={data} hoy={dia} />
       </> : page === 'unidad' ? <FichaUnidad key={unidadId} unidad={data.units.find(u => u.id === unidadId)} rentas={data.rentals.filter(r => r.unit === unidadId)} guardar={edita ? taller : null} />
         : page === 'equipos' ? <EquipmentCatalog units={data.units} catalogo={data.catalogo ?? []} reservaciones={pendientes} rentals={data.rentals} onRegister={edita ? registrar : null} />
         : page === 'historial' ? <><h1>Historial de rentas</h1><p className="section-intro">Consulta las rentas cerradas y los movimientos de cada unidad.</p>{listado('historial')}</>

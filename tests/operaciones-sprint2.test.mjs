@@ -239,26 +239,28 @@ test('recorrido del sprint 2 con cuentas reales y PostgreSQL', { skip: !process.
     await expect(page.getByRole('link',{name:new RegExp('Entrega · EQ-AGENDA · ' + actual.id)})).toHaveAttribute('href','/comercial/rentas/'+actual.id);
     await expect(page.getByRole('link',{name:/Programado · EQ-PRUEBA/})).toHaveAttribute('href','/comercial/inventario/EQ-PRUEBA');
     const panel = (await pedir('GET','/operacion',operador)).data;
-    const etapas = {
-      'por-asignar': panel.reservaciones.length,
-      preparacion: panel.rentals.filter(r => r.status === 'Apartado' || (r.status === 'En preparación' && !r.ready)).length,
-      listos: panel.rentals.filter(r => r.status === 'En preparación' && r.ready).length,
-      rentas: panel.rentals.filter(r => r.status === 'En renta').length,
-      revision: panel.rentals.filter(r => r.status === 'En revisión').length,
-      mantenimiento: panel.rentals.filter(r => r.status === 'En mantenimiento').length,
+    const menu = page.getByRole('group', {name:'Pendientes de operaciones'});
+    const activas = panel.rentals.filter(r => r.status === 'En renta');
+    const conteos = {
+      'Reservaciones': panel.reservaciones.length,
+      'Rentas activas': activas.length,
+      'Preparación de equipos': panel.rentals.filter(r => ['Apartado','En preparación','En mantenimiento'].includes(r.status)).length,
+      'Recolecciones programadas': activas.filter(r => r.collection?.date).length,
+      'Pendientes de revisión': panel.rentals.filter(r => r.status === 'En revisión').length,
     };
-    for (const [etapa,total] of Object.entries(etapas)) {
-      const destino = '/comercial/operacion/' + etapa;
-      const tarjeta = page.locator('.home-card').filter({has:page.locator('.home-count')}).and(page.locator('a[href="'+destino+'"]'));
+    for (const [nombre,total] of Object.entries(conteos)) {
+      const tarjeta = menu.getByRole('button',{name:new RegExp(nombre)});
       await expect(tarjeta.locator('.home-count')).toHaveText(String(total));
       await tarjeta.click();
-      await expect(page).toHaveURL(new URL(destino,new URL(base).origin).href);
-      if (!total) await expect(page.getByRole('heading',{name:/No hay/})).toBeVisible();
-      await page.getByRole('link',{name:'Inicio',exact:true}).click();
+      await expect(tarjeta).toHaveAttribute('aria-pressed','true');
+      await expect(page.getByRole('heading',{name:nombre,exact:true}).first()).toBeVisible();
     }
-    const listos = page.getByRole('link').filter({has:page.getByRole('heading',{name:'Listos para entregar'})});
-    await expect(listos.locator('.home-count')).toHaveText('1');
-    await listos.click();
+    await page.getByRole('button',{name:/Fecha de la agenda/}).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await menu.getByRole('button',{name:/Preparación de equipos/}).click();
     await expect(page.getByText('EQ-AGENDA',{exact:false}).first()).toBeVisible();
     await page.getByRole('button',{name:/Ver detalle/}).click();
     await expect(page.getByRole('button',{name:'Registrar entrega'})).toHaveCount(0);

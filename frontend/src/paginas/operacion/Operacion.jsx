@@ -178,4 +178,4 @@ function PhotoUpload({rental,error,busy=false,dialogRef,onClose,onSave}) {
   </section></ModalBackdrop>;
 }
 
-export { Modal, RentalSummary, RentalActions, RentalDocuments };
+export { Icon, Modal, RentalSummary, RentalActions, RentalDocuments };

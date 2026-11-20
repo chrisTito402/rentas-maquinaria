@@ -34,6 +34,6 @@ test('error de carga y recuperación sin perder el menú del panel', async ({ pa
   await expect(page.getByRole('link', { name: 'Cotizaciones', exact: true })).toBeVisible();
   fallo = false;
   await page.getByRole('button', { name: 'Volver a intentar' }).click();
-  await expect(page.getByRole('heading', { name: 'Una renta, paso a paso' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Inicio', exact: true })).toBeVisible();
   await page.screenshot({ path: 'test-results/gestion-desktop.png', fullPage: true });
 });

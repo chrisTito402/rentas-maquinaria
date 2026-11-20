@@ -174,7 +174,7 @@ test('OP-14 | navegación móvil, accesos anteriores y recarga de enlaces privad
   await expect(page).toHaveURL(/comercial\/operacion\/rentas\?x=1$/);
   await page.goto('/gestion/inicio');
   await expect(page).toHaveURL(/comercial\/inicio$/);
-  await expect(page.getByRole('heading', { name: 'Una renta, paso a paso' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Inicio', exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(mock.errores).toEqual([]);
 });

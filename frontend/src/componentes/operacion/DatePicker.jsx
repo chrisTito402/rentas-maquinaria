@@ -15,7 +15,7 @@ function moveMonth(date, amount) {
   return new Date(target.getFullYear(), target.getMonth(), Math.min(date.getDate(), last), 12);
 }
 
-export default function DatePicker({ name, label, defaultValue }) {
+export default function DatePicker({ name, label, defaultValue, onChange, mostrarDia = false }) {
   const id = useId();
   const root = useRef(null);
   const trigger = useRef(null);
@@ -67,7 +67,7 @@ export default function DatePicker({ name, label, defaultValue }) {
       close();
     }
   };
-  const select = date => { setValue(localDay(date)); close(); };
+  const select = date => { setValue(localDay(date)); onChange?.(localDay(date)); close(); };
   const keyDown = (event, date) => {
     const amounts = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
     let next;
@@ -84,7 +84,7 @@ export default function DatePicker({ name, label, defaultValue }) {
     <input name={name} type="hidden" value={value}/>
     <button ref={trigger} type="button" className="date-picker-trigger" aria-labelledby={id + '-label ' + id + '-value'} aria-expanded={open} aria-haspopup="dialog" aria-controls={open ? id + '-calendar' : undefined} onKeyDown={closeOnEscape} onClick={() => {
       if (open) close(); else { setFocusedDate(parseDate(value) || new Date()); setOpen(true); }
-    }}><span id={id + '-value'}>{formatDate(selected)}</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M4 5h16v16H4z M8 3v4 M16 3v4 M4 10h16"/></svg></button>
+    }}><span id={id + '-value'}>{mostrarDia ? selected.toLocaleDateString('es-MX', { dateStyle: 'full' }) : formatDate(selected)}</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M4 5h16v16H4z M8 3v4 M16 3v4 M4 10h16"/></svg></button>
     {open && <section ref={popup} style={position} className="date-picker-popover" id={id + '-calendar'} role="dialog" tabIndex={-1} aria-label={'Elegir ' + label.toLowerCase()} onKeyDown={closeOnEscape}>
       <div className="date-picker-heading">
         <button type="button" className="icon-button" aria-label="Mes anterior" onClick={() => setFocusedDate(moveMonth(focusedDate, -1))}>‹</button>
