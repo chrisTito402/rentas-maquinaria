@@ -67,7 +67,9 @@ export async function crearCotizacion(cuerpo, origen) {
       fechaInicio: linea.fechaInicio,
       fechaFin: linea.fechaFin,
       tarifaDia: tarifas.get(linea.equipoId),
-    })));
+    })), cliente.municipio);
+    // HU-13b: fuera de zona no se puede cotizar.
+    if (costos.fueraDeZona) throw errorHttp(400, costos.motivo, { errores: { municipio: costos.motivo } });
     if (!Number.isFinite(costos.total) || costos.total >= 10000000000) {
       throw errorHttp(400, 'El importe de la solicitud supera el máximo permitido.');
     }
@@ -77,9 +79,9 @@ export async function crearCotizacion(cuerpo, origen) {
       [cliente.nombre, cliente.telefono, cliente.correo, cliente.empresa || null, cliente.municipio, cliente.direccion],
     );
     const { rows: cotizaciones } = await db.query(
-      `INSERT INTO cotizaciones (cliente_id, origen, estado, notas, subtotal, iva, total)
-       VALUES ($1, $2, 'Pendiente', $3, $4, $5, $6) RETURNING id`,
-      [clientes[0].id, origen, cuerpo.notas?.trim() || null, costos.subtotal, costos.iva, costos.total],
+      `INSERT INTO cotizaciones (cliente_id, origen, estado, notas, subtotal, envio, iva, total)
+       VALUES ($1, $2, 'Pendiente', $3, $4, $5, $6, $7) RETURNING id`,
+      [clientes[0].id, origen, cuerpo.notas?.trim() || null, costos.subtotal, costos.envio, costos.iva, costos.total],
     );
     const id = cotizaciones[0].id;
     const folio = `COT-${String(id).padStart(4, '0')}`;

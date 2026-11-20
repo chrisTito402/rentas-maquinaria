@@ -126,3 +126,33 @@ test('HU-14a y HU-15a · se guarda Pendiente con folio y solo una Pendiente se a
   assert.equal((await pedir('PATCH', `/api/cotizaciones/${id}/aprobar`)).status, 409);
   assert.equal((await pedir('PATCH', '/api/cotizaciones/999999/aprobar')).status, 404);
 });
+
+// HU-13b · Costo de envío por zona
+const borrarCotizacion = async (id) => {
+  const { rows } = await query('DELETE FROM cotizaciones WHERE id = $1 RETURNING cliente_id', [id]);
+  if (rows.length) await query('DELETE FROM clientes WHERE id = $1', [rows[0].cliente_id]);
+};
+
+test('HU-13b · fuera de zona no se guarda y se marca el municipio', async (t) => {
+  if (!hayBase) return t.skip('sin PostgreSQL');
+  const { status, datos } = await pedir('POST', '/api/cotizaciones/web', {
+    ...solicitud, cliente: { ...solicitud.cliente, municipio: 'Hermosillo' },
+  });
+  assert.equal(status, 400);
+  assert.match(datos.errores.municipio, /Hermosillo/);
+});
+
+test('HU-13b · el servidor guarda el envío por unidad y el IVA sobre renta + envío', async (t) => {
+  if (!hayBase) return t.skip('sin PostgreSQL');
+  const creada = await pedir('POST', '/api/cotizaciones/web', {
+    ...solicitud,
+    cliente: { ...solicitud.cliente, municipio: 'Navojoa' },
+    lineas: [{ ...solicitud.lineas[0], cantidad: 2 }],
+  });
+  assert.equal(creada.status, 201);
+  t.after(() => borrarCotizacion(creada.datos.id));
+  const { datos } = await pedir('GET', `/api/cotizaciones/${creada.datos.id}`);
+  assert.equal(datos.envio, 2400);                                  // 2 unidades × $1,200 (zona 2)
+  assert.equal(datos.iva, Math.round((datos.subtotal + datos.envio) * 16) / 100);
+  assert.equal(datos.total, datos.subtotal + datos.envio + datos.iva);
+});

@@ -1,4 +1,4 @@
-// Dueño: Chris · HU-14a Enviar solicitud de cotización (KAN-11)
+// Dueño: Chris · HU-14a Enviar solicitud de cotización (KAN-11) y HU-13b Costo de envío por zona (KAN-53)
 // Diseño: frames «3 · Solicitud de cotización», «4 · Solicitud enviada (cliente)» y «E1 · Cotización vacía» del Figma.
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -7,7 +7,6 @@ import { api } from '../api.js';
 import FormularioCliente from '../componentes/FormularioCliente.jsx';
 import DesgloseCostos from '../componentes/DesgloseCostos.jsx';
 import IconoCheck from '../componentes/IconoCheck.jsx';
-import ProximoSprint from '../componentes/ProximoSprint.jsx';
 import { imagenEquipo, tieneIlustracion } from '../logica/imagenEquipo.js';
 import { validarCliente } from '@compartido/validarCliente.js';
 import { MAX_NOTAS } from '@compartido/constantes.js';
@@ -66,7 +65,7 @@ export default function MiCotizacion() {
       <div className="confirmacion__icono"><IconoCheck /></div>
       <h1>¡Recibimos tu solicitud!</h1>
       <p>Tu folio es <strong>{recibida.folio}</strong>. El área comercial la revisará y te enviará la cotización formal.</p>
-      <p className="f-alerta f-alerta--exito">Total: {dinero(recibida.total)} (incluye IVA). Tu cotización está Pendiente de revisión.</p>
+      <p className="f-alerta f-alerta--exito">Total: {dinero(recibida.total)} (incluye envío e IVA). Tu cotización está Pendiente de revisión.</p>
       <div className="confirmacion__acciones">
         <Link className="f-btn f-btn--primario" to="/">Volver al catálogo</Link>
       </div>
@@ -86,14 +85,15 @@ export default function MiCotizacion() {
     </section>
   );
 
-  const costos = calcularCostos(lineas);
+  const costos = calcularCostos(lineas, cliente.municipio || undefined);
+  const fueraDeZona = Boolean(cliente.municipio) && costos.fueraDeZona;   // HU-13b
 
   return (
     <>
       <section className="solicitud-intro">
         <Link className="f-volver" to="/">← Seguir viendo equipos</Link>
         <h1>Solicitud de cotización</h1>
-        <p>Déjanos tus datos una sola vez para todos tus equipos. El total ya incluye el IVA.</p>
+        <p>Déjanos tus datos una sola vez para todos tus equipos. El total incluye el envío a tu municipio y el IVA.</p>
       </section>
 
       <div className="solicitud">
@@ -139,11 +139,8 @@ export default function MiCotizacion() {
             </div>
           ))}
           <Link className="agregar-otro" to="/">+ Agregar otro equipo</Link>
-          <ProximoSprint hu="HU-13b" kan="KAN-53" titulo="Costo de envío por zona" duenio="Chris">
-            Se sumará el flete según el municipio de entrega. Por ahora el total solo incluye la renta e IVA.
-          </ProximoSprint>
-          <DesgloseCostos lineas={lineas} />
-          <button type="submit" form="form-solicitud" className="f-btn f-btn--primario f-btn--grande" disabled={enviando}>
+          <DesgloseCostos lineas={lineas} municipio={cliente.municipio} />
+          <button type="submit" form="form-solicitud" className="f-btn f-btn--primario f-btn--grande" disabled={enviando || fueraDeZona}>
             {enviando ? 'Enviando…' : 'Enviar solicitud de cotización →'}
           </button>
           <p className="solicitud-nota">Esto no es un cobro. Tu solicitud queda pendiente de revisión.</p>
