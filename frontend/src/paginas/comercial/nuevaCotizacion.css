@@ -19,7 +19,7 @@
 }
 .nueva-linea input { text-align: center; }
 .nueva-linea select:focus, .nueva-linea input:focus { outline: none; border-color: var(--f-accion); box-shadow: 0 0 0 3px rgba(249, 115, 22, .15); }
-.comercial .nueva-linea__boton-fechas { display: flex; align-items: center; gap: 6px; text-align: left; border: 1px solid var(--f-borde-input); border-radius: var(--f-r-sm); background: var(--f-blanco); }
+.comercial .nueva-linea__boton-fechas { display: flex; align-items: center; gap: 6px; text-align: left; white-space: nowrap; overflow: hidden; border: 1px solid var(--f-borde-input); border-radius: var(--f-r-sm); background: var(--f-blanco); }
 .comercial .nueva-linea__boton-fechas.abierto { border-color: var(--f-accion); }
 .nueva-linea__boton-fechas small { margin-left: auto; font-size: 11px; color: var(--f-tenue); white-space: nowrap; }
 .nueva-linea__fechas { position: relative; }
@@ -28,6 +28,7 @@
   background: var(--f-blanco); border: 1px solid var(--f-borde); border-radius: var(--f-r-lg); box-shadow: var(--f-sombra-hover); padding: 8px;
 }
 .nueva-linea__calendario .calendario { background: var(--f-blanco); }
+.nueva-linea__choque { margin: 8px 8px 0; font-size: 12px; }
 .nueva-linea__pie { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 4px 8px 8px; }
 .nueva-linea__pie strong { display: block; font-size: 13px; }
 .nueva-linea__pie small { display: block; font-size: 11px; color: var(--f-tenue); }

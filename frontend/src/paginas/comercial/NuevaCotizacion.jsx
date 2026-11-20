@@ -34,10 +34,21 @@ export default function NuevaCotizacion() {
   const [error, setError] = useState('');
   const [calendarioAbierto, setCalendarioAbierto] = useState(null);   // índice de la línea
   const [guardando, setGuardando] = useState(false);
+  const [ocupados, setOcupados] = useState({});   // { equipoId: [{ inicio, fin }] } · HU-02a
+  const [choque, setChoque] = useState('');
 
   useEffect(() => {
     api.get('/equipos').then(setEquipos).catch(() => setError('No se pudo cargar el catálogo de equipos.'));
   }, []);
+
+  function elegirEquipo(indice, equipoId) {
+    cambiarLinea(indice, { equipoId, fechaInicio: '', fechaFin: '' });
+    if (equipoId && !ocupados[equipoId]) {
+      api.get(`/equipos/${equipoId}/ocupadas`)
+        .then((rangos) => setOcupados((actuales) => ({ ...actuales, [equipoId]: rangos })))
+        .catch(() => {});
+    }
+  }
 
   function cambiarLinea(indice, cambios) {
     setLineas((actuales) => actuales.map((linea, i) => (i === indice ? { ...linea, ...cambios } : linea)));
@@ -111,7 +122,7 @@ export default function NuevaCotizacion() {
               return (
                 <div className="nueva-linea" key={indice}>
                   <select aria-label={`Equipo de la línea ${indice + 1}`} value={linea.equipoId}
-                    onChange={(e) => cambiarLinea(indice, { equipoId: e.target.value })}>
+                    onChange={(e) => elegirEquipo(indice, e.target.value)}>
                     <option value="">Elige un equipo…</option>
                     {equipos.map((e) => <option key={e.id} value={e.id}>{e.nombre}</option>)}
                   </select>
@@ -119,14 +130,16 @@ export default function NuevaCotizacion() {
                   <div className="nueva-linea__fechas">
                     <button type="button" className={`nueva-linea__boton-fechas${calendarioAbierto === indice ? ' abierto' : ''}`}
                       aria-expanded={calendarioAbierto === indice} aria-label={`Fechas de la línea ${indice + 1}`}
-                      onClick={() => setCalendarioAbierto(calendarioAbierto === indice ? null : indice)}>
+                      onClick={() => { setChoque(''); setCalendarioAbierto(calendarioAbierto === indice ? null : indice); }}>
                       📅 {textoFechas(linea.fechaInicio, linea.fechaFin)}
                       {dias > 0 && <small>{dias} {dias === 1 ? 'día' : 'días'}</small>}
                     </button>
                     {calendarioAbierto === indice && (
                       <div className="nueva-linea__calendario">
                         <CalendarioRango inicio={linea.fechaInicio} fin={linea.fechaFin}
-                          onCambio={(fechaInicio, fechaFin) => cambiarLinea(indice, { fechaInicio, fechaFin })} />
+                          ocupados={ocupados[linea.equipoId] || []} onChoque={setChoque}
+                          onCambio={(fechaInicio, fechaFin) => { setChoque(''); cambiarLinea(indice, { fechaInicio, fechaFin }); }} />
+                        {choque && <p className="f-alerta f-alerta--error nueva-linea__choque" role="alert">{choque}</p>}
                         <div className="nueva-linea__pie">
                           <div>
                             <strong>{dias > 0 ? `${textoFechas(linea.fechaInicio, linea.fechaFin)} · ${dias} ${dias === 1 ? 'día' : 'días'}` : 'Elige el inicio y el fin'}</strong>
