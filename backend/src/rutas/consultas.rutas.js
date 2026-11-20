@@ -2,12 +2,18 @@
 import { Router } from 'express';
 import { query } from '../db.js';
 import { errorHttp } from '../errores.js';
+import { ESTADOS, ORIGENES } from '../../../compartido/constantes.js';
 
 const r = Router();
 
-// GET /api/cotizaciones?q=texto  (busca por folio o por cliente; la más reciente primero)
+// GET /api/cotizaciones?q=texto&estado=Aprobada&origen=Panel
+// busca por folio o por cliente y filtra por estado y origen (HU-16); la más reciente primero
 r.get('/', async (req, res) => {
   const q = String(req.query.q ?? '').trim();
+  const estado = String(req.query.estado ?? '');
+  const origen = String(req.query.origen ?? '');
+  if (estado && !ESTADOS.includes(estado)) throw errorHttp(400, 'Estado no válido');
+  if (origen && !ORIGENES.includes(origen)) throw errorHttp(400, 'Origen no válido');
   const { rows } = await query(
     `SELECT c.id, c.folio, cl.nombre AS cliente, cl.empresa, c.origen, c.estado, c.total,
             c.creada_en AS "creadaEn",
@@ -18,11 +24,13 @@ r.get('/', async (req, res) => {
        JOIN clientes cl ON cl.id = c.cliente_id
        LEFT JOIN cotizacion_equipos ce ON ce.cotizacion_id = c.id
        LEFT JOIN equipos e ON e.id = ce.equipo_id
-      WHERE $1::text = '' OR c.folio ILIKE '%' || $1::text || '%' OR cl.nombre ILIKE '%' || $1::text || '%'
-            OR cl.empresa ILIKE '%' || $1::text || '%'
+      WHERE ($1::text = '' OR c.folio ILIKE '%' || $1::text || '%' OR cl.nombre ILIKE '%' || $1::text || '%'
+             OR cl.empresa ILIKE '%' || $1::text || '%')
+        AND ($2::text = '' OR c.estado = $2::text)
+        AND ($3::text = '' OR c.origen = $3::text)
       GROUP BY c.id, cl.nombre, cl.empresa
       ORDER BY c.creada_en DESC, c.id DESC`,
-    [q],
+    [q, estado, origen],
   );
   res.json(rows);
 });

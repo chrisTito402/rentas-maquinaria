@@ -1,0 +1,24 @@
+/* HU-16 · Filtros por estado y origen en la bandeja (frame «1 · Bandeja de solicitudes» del Figma) */
+/* El texto oculto «Abrir» de la tabla se posiciona dentro de la tarjeta y no ensancha la página en celular */
+.bandeja { position: relative; }
+.bandeja__filtros--hu16 { flex-direction: column; gap: 14px; }
+.bandeja__pestanas { display: flex; flex-wrap: wrap; gap: 8px; }
+.comercial .bandeja__pestanas button {
+  padding: 7px 14px; border-radius: 9999px; background: var(--f-sutil); color: var(--f-texto-2);
+  font-size: 13px; font-weight: 600; white-space: nowrap;
+}
+.comercial .bandeja__pestanas button:hover { background: var(--f-borde); color: var(--f-texto); }
+.comercial .bandeja__pestanas button[aria-pressed='true'] { background: var(--f-texto); color: var(--f-blanco); }
+.bandeja__busqueda { display: flex; flex-wrap: wrap; gap: 12px; }
+.bandeja__filtros .f-campo.bandeja__origen { width: 190px; }
+.bandeja__filtros .bandeja__origen select { min-height: 42px; padding: 8px 12px; font-size: 14px; }
+.bandeja__vacio .f-btn { margin-top: 14px; }
+
+/* Estados que llegan con el Sprint 2 */
+.f-estado--rechazada { background: var(--f-error-fondo); color: var(--f-error); }
+.f-estado--aceptada { background: #eff6ff; color: #1d4ed8; }
+.f-estado--no-aceptada { background: var(--f-sutil); color: var(--f-texto-2); }
+
+@media (max-width: 640px) {
+  .bandeja__filtros .bandeja__busqueda .f-campo { width: 100%; }
+}

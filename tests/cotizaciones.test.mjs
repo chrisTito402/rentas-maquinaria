@@ -199,6 +199,27 @@ test('HU-02a · un equipo con id inválido responde 404 en ocupadas', async () =
   assert.equal((await pedir('GET', '/api/equipos/abc/ocupadas')).status, 404);
 });
 
+// HU-16 · Filtros por estado y origen
+test('HU-16 · un estado u origen que no existe responde 400', async (t) => {
+  if (!hayBase) return t.skip('sin PostgreSQL');
+  assert.equal((await pedir('GET', '/api/cotizaciones?estado=Borrada')).status, 400);
+  assert.equal((await pedir('GET', '/api/cotizaciones?origen=Fax')).status, 400);
+});
+
+test('HU-16 · filtrar por estado y origen solo trae las que coinciden', async (t) => {
+  if (!hayBase) return t.skip('sin PostgreSQL');
+  const creada = await pedir('POST', '/api/cotizaciones/web', solicitud);
+  assert.equal(creada.status, 201);
+  t.after(() => borrarCotizacion(creada.datos.id));
+  const { status, datos } = await pedir('GET', '/api/cotizaciones?estado=Pendiente&origen=Web');
+  assert.equal(status, 200);
+  assert.ok(datos.some((c) => c.id === creada.datos.id));
+  assert.ok(datos.every((c) => c.estado === 'Pendiente' && c.origen === 'Web'));
+  const aprobadas = await pedir('GET', '/api/cotizaciones?estado=Aprobada');
+  assert.ok(aprobadas.datos.every((c) => c.estado === 'Aprobada'));
+  assert.ok(!aprobadas.datos.some((c) => c.id === creada.datos.id));
+});
+
 // HU-05 · Crear cotización desde el panel
 test('HU-05 · sin sesión no se puede crear una cotización desde el panel', async () => {
   const respuesta = await fetch(origen + '/api/cotizaciones/panel', {
