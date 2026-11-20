@@ -39,7 +39,7 @@ export default function PanelLayout() {
         </nav>
         <div className="comercial-menu__perfil">
           <strong>{usuario.nombre}</strong>
-          <span>Personal interno</span>
+          <span>{usuario.rol === 'admin' ? 'Administrador' : 'Auxiliar comercial'}</span>
           <button type="button" className="acceso-salir" onClick={cerrarSesion} disabled={cerrando}>{cerrando ? 'Cerrando sesión…' : 'Cerrar sesión'}</button>
           {error && <p role="alert">{error}</p>}
           <Link to="/">Ver catálogo público ↗</Link>

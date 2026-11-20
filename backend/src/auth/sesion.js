@@ -22,7 +22,7 @@ export function protegerSesion(consultar = query) {
     res.set('Cache-Control', 'no-store');
     const token = leerToken(req);
     if (!token) throw errorHttp(401, 'Inicia sesión para acceder al panel.');
-    const { rows } = await consultar(`SELECT u.id, u.usuario_cifrado FROM auth_sesiones s
+    const { rows } = await consultar(`SELECT u.id, u.usuario_cifrado, u.rol FROM auth_sesiones s
       JOIN auth_usuarios u ON u.id = s.usuario_id
       WHERE s.token_hash = $1 AND s.vence_en > NOW() AND u.activo = TRUE`, [hashToken(token)]);
     if (!rows.length) throw errorHttp(401, 'Tu sesión terminó. Inicia sesión nuevamente.');

@@ -5,13 +5,15 @@ import { pool } from '../db.js';
 import { errorHttp } from '../errores.js';
 import { buscarChoque, mensajeChoque } from '../../../compartido/ocupadas.js';
 import { rangosOcupados } from './ocupadas.rutas.js';
+import { soloAdmin } from '../auth/roles.js';
 
 const r = Router();
 
 // PATCH /api/cotizaciones/:id/aprobar
 // regresa 200: { id, folio, estado: 'Aprobada' }   ·   404 si no existe
+// 403 si quien aprueba no es administrador (roles)
 // 409 si no está Pendiente o si algún equipo ya está apartado en esas fechas (HU-02a)
-r.patch('/:id/aprobar', async (req, res) => {
+r.patch('/:id/aprobar', soloAdmin, async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id) || id < 1 || id > 2147483647) throw errorHttp(404, 'Cotización no encontrada');
   const db = await pool.connect();

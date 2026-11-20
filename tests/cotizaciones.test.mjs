@@ -240,3 +240,24 @@ test('HU-05 · la misma cotización por /web y por /panel da el mismo total; la 
   const { rows } = await query('SELECT origen, estado FROM cotizaciones WHERE id = $1', [panel.datos.id]);
   assert.deepEqual(rows[0], { origen: 'Panel', estado: 'Pendiente' });
 });
+
+// Roles · solo el administrador aprueba (notas de la re-presentación del Sprint 1)
+test('Roles · el auxiliar no puede aprobar (403) y la cotización sigue Pendiente', async (t) => {
+  if (!hayBase) return t.skip('sin PostgreSQL');
+  const usuario = 'auxiliar-' + randomBytes(8).toString('hex');
+  const { rows: [cuenta] } = await query(
+    "INSERT INTO auth_usuarios (usuario_cifrado, usuario_indice, contrasena_hash, rol) VALUES ($1, $2, $3, 'auxiliar') RETURNING id",
+    [cifrarUsuario(usuario), indiceUsuario(usuario), await hashContrasena(randomBytes(32).toString('hex'))]);
+  const token = randomBytes(32).toString('hex');
+  await query("INSERT INTO auth_sesiones (token_hash, usuario_id, vence_en) VALUES ($1, $2, NOW() + INTERVAL '1 hour')", [hashToken(token), cuenta.id]);
+  const creada = await pedir('POST', '/api/cotizaciones/web', solicitud);
+  t.after(async () => { await borrarCotizacion(creada.datos.id); await query('DELETE FROM auth_usuarios WHERE id = $1', [cuenta.id]); });
+
+  const comoAuxiliar = (metodo, ruta) => fetch(origen + ruta, { method: metodo, headers: { Cookie: `${nombreCookie()}=${token}` } });
+  const sesion = await (await comoAuxiliar('GET', '/api/auth/sesion')).json();
+  assert.equal(sesion.usuario.rol, 'auxiliar');
+  assert.equal((await comoAuxiliar('GET', '/api/cotizaciones')).status, 200);          // sí puede consultar
+  assert.equal((await comoAuxiliar('PATCH', `/api/cotizaciones/${creada.datos.id}/aprobar`)).status, 403);
+  const { rows } = await query('SELECT estado FROM cotizaciones WHERE id = $1', [creada.datos.id]);
+  assert.equal(rows[0].estado, 'Pendiente');
+});

@@ -70,6 +70,10 @@ Para crear una cuenta, configura temporalmente `AUTH_USUARIO` y
 npm run auth:crear-usuario --prefix backend
 ```
 
+Para elegir el rol agrega `AUTH_ROL=admin` o `AUTH_ROL=auxiliar` (si no se pone, la cuenta es `auxiliar`).
+El **administrador** aprueba cotizaciones; el **auxiliar** las consulta y las captura, pero no las aprueba.
+Las cuentas creadas antes de los roles quedaron como `admin`.
+
 El comando crea las tablas de autenticación que falten, sin borrar datos ni
 reemplazar cuentas existentes. Retira `AUTH_USUARIO` y `AUTH_CONTRASENA` del entorno
 después. En Render ejecútalo desde la consola del servicio con las mismas variables

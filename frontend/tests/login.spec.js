@@ -92,3 +92,26 @@ test('HU-16 · sin sesión manda a login; con sesión filtra por estado y origen
   await page.getByRole('button', { name: 'Limpiar filtros' }).click();
   await expect(filas).toHaveCount(3);
 });
+
+// Roles · el auxiliar no ve el botón Aprobar; el administrador sí (API simulada)
+for (const [rol, veBoton] of [['auxiliar', false], ['admin', true]]) {
+  test(`Roles · ${rol} ${veBoton ? 'sí' : 'no'} ve el botón Aprobar`, async ({ page }) => {
+    await page.route('**/api/**', async route => {
+      const url = new URL(route.request().url());
+      if (url.pathname === '/api/auth/sesion') return route.fulfill({ json: { usuario: { id: 1, nombre: rol, rol } } });
+      if (url.pathname === '/api/cotizaciones/1') {
+        return route.fulfill({ json: {
+          id: 1, folio: 'COT-0001', origen: 'Web', estado: 'Pendiente', notas: null, subtotal: 1000, envio: 500, iva: 240, total: 1740,
+          creadaEn: '2026-11-20T10:00:00Z', lineas: [],
+          cliente: { nombre: 'Ana Pérez', telefono: '6441234567', correo: 'ana@correo.com', empresa: null, municipio: 'Cajeme', direccion: 'Calle 1' },
+        } });
+      }
+      return route.fulfill({ json: { units: [], rentals: [], reservaciones: [], catalogo: [] } });
+    });
+    await page.goto('/comercial/cotizaciones/1');
+    await expect(page.getByRole('heading', { name: /COT-0001/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Aprobar cotización' })).toHaveCount(veBoton ? 1 : 0);
+    await expect(page.getByText('Solo el administrador puede aprobar esta cotización.')).toHaveCount(veBoton ? 0 : 1);
+    await expect(page.getByText(rol === 'admin' ? 'Administrador' : 'Auxiliar comercial', { exact: true })).toBeVisible();
+  });
+}

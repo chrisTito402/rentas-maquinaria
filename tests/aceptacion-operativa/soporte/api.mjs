@@ -14,7 +14,7 @@ export async function prepararAPI(page) {
     const url = new URL(route.request().url());
     let body;
     let status = 200;
-    if (url.pathname === '/api/auth/sesion') body = { usuario: { id: 1, nombre: 'operativa' } };
+    if (url.pathname === '/api/auth/sesion') body = { usuario: { id: 1, nombre: 'operativa', rol: 'admin' } };
     else if (url.pathname === '/api/cotizaciones/1/aprobar') { cot.estado = 'Aprobada'; data.reservaciones = [cot]; body = { id: 1, folio: cot.folio, estado: 'Aprobada' }; }
     else if (url.pathname === '/api/cotizaciones/1') body = cot;
     else if (url.pathname === '/api/cotizaciones') body = [{ ...cot, cliente: cliente.nombre, fechaInicio: linea.inicio, fechaFin: linea.fin }];

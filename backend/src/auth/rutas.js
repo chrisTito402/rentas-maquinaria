@@ -19,7 +19,7 @@ export function crearRutasAuth(consultar = query) {
       || typeof contrasena !== 'string' || !contrasena || contrasena.length > 256) {
       throw errorHttp(400, 'Escribe tu usuario y contraseña.');
     }
-    const { rows } = await consultar('SELECT id, usuario_cifrado, contrasena_hash, activo FROM auth_usuarios WHERE usuario_indice = $1', [indiceUsuario(usuario)]);
+    const { rows } = await consultar('SELECT id, usuario_cifrado, contrasena_hash, activo, rol FROM auth_usuarios WHERE usuario_indice = $1', [indiceUsuario(usuario)]);
     const cuenta = rows[0];
     hashFicticio ??= hashContrasena(randomBytes(32).toString('hex'));
     const coincide = await verificarContrasena(cuenta?.contrasena_hash || await hashFicticio, contrasena);
@@ -31,10 +31,10 @@ export function crearRutasAuth(consultar = query) {
     await consultar('DELETE FROM auth_sesiones WHERE vence_en <= NOW()');
     await consultar('INSERT INTO auth_sesiones (token_hash, usuario_id, vence_en) VALUES ($1, $2, $3)', [hashToken(token), cuenta.id, vence]);
     res.cookie(nombreCookie(), token, { ...opcionesCookie(), maxAge: 8 * 60 * 60 * 1000 });
-    res.json({ usuario: { id: cuenta.id, nombre: descifrarUsuario(cuenta.usuario_cifrado) } });
+    res.json({ usuario: { id: cuenta.id, nombre: descifrarUsuario(cuenta.usuario_cifrado), rol: cuenta.rol } });
   });
   r.get('/sesion', protegerSesion(consultar), (req, res) => {
-    res.json({ usuario: { id: req.usuario.id, nombre: descifrarUsuario(req.usuario.usuario_cifrado) } });
+    res.json({ usuario: { id: req.usuario.id, nombre: descifrarUsuario(req.usuario.usuario_cifrado), rol: req.usuario.rol } });
   });
   r.post('/logout', async (req, res) => {
     const token = leerToken(req);
