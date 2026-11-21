@@ -23,6 +23,6 @@ export function iniciarVigencia() {
   const revisar = () => vencerCotizaciones()
     .then((folios) => { if (folios.length) console.log(`Cotizaciones vencidas: ${folios.join(', ')}`); })
     .catch((error) => console.warn('No se pudo revisar la vigencia de las cotizaciones:', error.message));
-  revisar();
+  void revisar();
   setInterval(revisar, 60 * 60 * 1000).unref();
 }
