@@ -108,7 +108,7 @@ export default function MiCotizacion() {
   return (
     <>
       <section className="solicitud-intro">
-        <Link className="f-volver" to="/">← Seguir viendo equipos</Link>
+        <Link className="f-volver f-volver--boton" to="/">← Volver al catálogo de maquinaria</Link>
         <h1>Solicitud de cotización</h1>
         <p>Déjanos tus datos una sola vez para todos tus equipos. El total incluye el envío a tu municipio y el IVA.</p>
       </section>

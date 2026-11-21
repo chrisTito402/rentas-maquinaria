@@ -70,6 +70,9 @@ body:has(.sitio), body:has(.comercial) { margin: 0; background: var(--f-fondo); 
 .f-enlace:hover { text-decoration: underline; }
 .f-volver { color: var(--f-accion); font-weight: 600; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
 .f-volver:hover { text-decoration: underline; }
+/* Ajuste A5: «Volver al catálogo» como botón grande y descriptivo (igual que en el login) */
+.f-volver--boton { align-self: flex-start; justify-content: center; min-height: 44px; padding: 0 18px; border: 1px solid var(--f-borde-input, #cbd5e1); border-radius: 12px; background: var(--f-blanco, #fff); color: var(--f-texto); font-size: 15px; font-weight: 700; }
+.f-volver--boton:hover { text-decoration: none; border-color: var(--f-accion); color: var(--f-accion); }
 .f-boton-texto { background: none; border: 0; padding: 0; color: var(--f-tenue); font-size: 12px; font-weight: 600; }
 .f-boton-texto:hover { color: var(--f-error); text-decoration: underline; }
 .f-boton-texto:disabled { background: none; color: #cbd5e1; }
@@ -123,7 +126,9 @@ body:has(.sitio), body:has(.comercial) { margin: 0; background: var(--f-fondo); 
 .sitio-marca__nombre { font-size: 20px; font-weight: 600; line-height: 20px; display: block; }
 .sitio-marca__lugar { font-size: 11px; font-weight: 500; color: var(--f-texto-2); letter-spacing: .55px; text-transform: uppercase; display: block; margin-top: 4px; }
 .sitio-nav { display: flex; align-items: center; gap: 24px; }
-.sitio-nav__link { font-size: 16px; font-weight: 600; color: var(--f-texto-2); text-decoration: none; padding: 8px 16px; border-radius: var(--f-r-sm); }
+.sitio-nav__link { font-size: 16px; font-weight: 600; color: var(--f-texto-2); text-decoration: none; padding: 8px 16px; border-radius: var(--f-r-sm); white-space: nowrap; }
+/* Ajuste A5: «Catálogo de maquinaria» completo; en pantallas angostas solo «Catálogo» */
+@media (max-width: 1000px) { .sitio-nav__extra { display: none; } }
 .sitio-nav__link:hover, .sitio-nav__link.active { color: var(--f-texto); }
 .sitio-nav__cotizacion { display: inline-flex; align-items: center; gap: 8px; background: var(--f-sutil); color: var(--f-texto); padding: 8px 16px; border-radius: 9999px; font-size: 14px; font-weight: 600; text-decoration: none; border: 1px solid transparent; }
 .sitio-nav__cotizacion.active { border-color: var(--f-accion); color: var(--f-texto); }

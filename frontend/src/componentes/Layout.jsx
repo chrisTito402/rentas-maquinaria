@@ -43,7 +43,7 @@ export default function Layout() {
               </span>
               <span className="sitio-municipio__corto">{municipio || 'Municipio'}</span>
             </button>
-            <NavLink to="/" end className="sitio-nav__link">Catálogo</NavLink>
+            <NavLink to="/" end className="sitio-nav__link">Catálogo<span className="sitio-nav__extra"> de maquinaria</span></NavLink>
             <NavLink to="/mi-cotizacion" className="sitio-nav__cotizacion">
               <img src="/img/iconos/cotizacion.svg" alt="" />
               Mi cotización
