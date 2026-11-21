@@ -21,6 +21,7 @@
 .f-estado--rechazada { background: var(--f-error-fondo); color: var(--f-error); }
 .f-estado--aceptada { background: #eff6ff; color: #1d4ed8; }
 .f-estado--no-aceptada { background: var(--f-sutil); color: var(--f-texto-2); }
+.f-estado--vencida { background: var(--f-sutil); color: var(--f-texto-2); text-decoration: line-through; }
 
 @media (max-width: 640px) {
   .bandeja__filtros .bandeja__busqueda .f-campo { width: 100%; }

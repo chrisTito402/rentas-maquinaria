@@ -12,6 +12,7 @@ import AccionesCotizacionPdf from '../../componentes/AccionesCotizacionPdf.jsx';
 import { cargarOperacion } from '../../servicios/operacion.js';
 import { etapaRenta } from '../../logica/flujo.js';
 import { dinero } from '@compartido/formato.js';
+import { DIAS_VIGENCIA, fechaVigencia } from '@compartido/vigencia.js';
 
 const corta = (iso) => new Date(`${String(iso).slice(0, 10)}T12:00:00`).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
 const recibida = (iso) => new Date(iso).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -83,9 +84,18 @@ export default function DetalleCotizacion() {
       <header className="comercial-encabezado" style={{ marginTop: 12 }}>
         <div>
           <h1>Cotización {cot.folio} <EstadoCotizacion valor={cot.estado} /></h1>
-          <p>Recibida el {recibida(cot.creadaEn)} desde {cot.origen === 'Web' ? 'el formulario web' : 'el panel'}</p>
+          <p>Recibida el {recibida(cot.creadaEn)} desde {cot.origen === 'Web' ? 'el formulario web' : 'el panel'}
+            {['Pendiente', 'Aprobada'].includes(cot.estado) && ` · Válida hasta el ${fechaVigencia(cot.creadaEn)}`}</p>
         </div>
       </header>
+
+      {/* A1: a los 15 días naturales el sistema la pasa a Vencida y libera sus fechas */}
+      {cot.estado === 'Vencida' && (
+        <p className="f-alerta" role="status" style={{ marginBottom: 16 }}>
+          Esta cotización venció el {fechaVigencia(cot.creadaEn)}: pasaron {DIAS_VIGENCIA} días desde que se pidió sin que se confirmara.
+          Sus fechas quedaron libres. Si el cliente todavía la quiere, captura una nueva.
+        </p>
+      )}
 
       {cot.estado === 'Aprobada' && (
         <section className="f-tarjeta detalle-bloque seguimiento" role="status" aria-labelledby="titulo-seguimiento">

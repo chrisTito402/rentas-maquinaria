@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "test": "node --import ../tests/alias.mjs --test ../tests/aceptacion-operativa/reglas.test.mjs ../tests/validarCliente.test.mjs ../tests/costos.test.mjs ../tests/agregarLinea.test.mjs ../tests/imagenEquipo.test.mjs ../tests/ocupadas.test.mjs ../tests/whatsapp.test.mjs",
+    "test": "node --import ../tests/alias.mjs --test ../tests/aceptacion-operativa/reglas.test.mjs ../tests/validarCliente.test.mjs ../tests/costos.test.mjs ../tests/agregarLinea.test.mjs ../tests/imagenEquipo.test.mjs ../tests/ocupadas.test.mjs ../tests/whatsapp.test.mjs ../tests/vigencia.test.mjs",
     "test:e2e": "playwright test && playwright test --config playwright.aceptacion.config.js",
     "test:aceptacion": "node ../tests/aceptacion-operativa/ejecutar.mjs"
   },

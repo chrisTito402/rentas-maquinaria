@@ -198,6 +198,15 @@ y no permite distribuirlo. La app solo responde un código postal a la vez.
 Si no se ha cargado el catálogo, el formulario sigue funcionando y el municipio
 y la colonia se capturan a mano.
 
+### Vigencia de 15 días (ajuste A1)
+
+Una cotización vale 15 días naturales desde que el cliente la pide. Al arrancar
+el servidor, cada hora y al consultar la bandeja, el sistema pasa a **Vencida**
+las Pendientes y las Aprobadas que ya cumplieron ese plazo; sus fechas quedan
+libres para otros clientes. No vencen las Aprobadas a las que Operación ya les
+asignó unidades ni las Aceptadas por el cliente. La fecha límite aparece en la
+confirmación del cliente, en el detalle y en el PDF.
+
 ## Prueba del recorrido
 
 1. En [Cotizaciones](http://localhost:5173/comercial/cotizaciones),

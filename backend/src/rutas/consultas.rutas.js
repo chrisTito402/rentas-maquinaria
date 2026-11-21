@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { query } from '../db.js';
 import { errorHttp } from '../errores.js';
 import { ESTADOS, ORIGENES } from '../../../compartido/constantes.js';
+import { vencerCotizaciones } from '../vigencia.js';
 
 const r = Router();
 
@@ -14,6 +15,7 @@ r.get('/', async (req, res) => {
   const origen = String(req.query.origen ?? '');
   if (estado && !ESTADOS.includes(estado)) throw errorHttp(400, 'Estado no válido');
   if (origen && !ORIGENES.includes(origen)) throw errorHttp(400, 'Origen no válido');
+  await vencerCotizaciones();   // A1: así la lista nunca muestra como vigente una que ya venció
   const { rows } = await query(
     `SELECT c.id, c.folio, cl.nombre AS cliente, cl.empresa, c.origen, c.estado, c.total,
             c.creada_en AS "creadaEn",
@@ -39,6 +41,7 @@ r.get('/', async (req, res) => {
 r.get('/:id', async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) throw errorHttp(400, 'Id de cotización inválido');
+  await vencerCotizaciones();
   const { rows } = await query(
     `SELECT c.id, c.folio, c.origen, c.estado, c.notas, c.subtotal, c.envio, c.iva, c.total, c.creada_en AS "creadaEn",
             json_build_object('nombre', cl.nombre, 'telefono', cl.telefono, 'correo', cl.correo,
