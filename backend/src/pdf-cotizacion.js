@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import PDFDocument from 'pdfkit';
 import sharp from 'sharp';
 import { dinero, fecha } from '../../compartido/formato.js';
+import { venceEl } from '../../compartido/vigencia.js';
 
 const COLOR = {
   tinta: '#0f172a',
@@ -81,8 +82,12 @@ function dibujar(doc, cotizacion, logoPng) {
   const recibida = new Date(cotizacion.creadaEn).toLocaleDateString('es-MX', {
     day: '2-digit', month: 'long', year: 'numeric', timeZone: 'America/Hermosillo',
   });
+  // A1: vigencia de 15 días naturales desde que se pidió
+  const vigente = venceEl(cotizacion.creadaEn).toLocaleDateString('es-MX', {
+    day: '2-digit', month: 'long', year: 'numeric', timeZone: 'America/Hermosillo',
+  });
   doc.font('Helvetica').fontSize(10).fillColor(COLOR.secundario)
-    .text(`Aprobada · Solicitud recibida el ${recibida} · Origen: ${cotizacion.origen}`, MARGEN, 150, { width: 511 });
+    .text(`Aprobada · Recibida el ${recibida} · Válida hasta el ${vigente} · Origen: ${cotizacion.origen}`, MARGEN, 150, { width: 511 });
 
   const ancho = 228;
   const nombre = cliente.nombre;

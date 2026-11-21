@@ -6,13 +6,14 @@ import { errorHttp } from '../errores.js';
 import { buscarChoque, mensajeChoque } from '../../../compartido/ocupadas.js';
 import { rangosOcupados } from './ocupadas.rutas.js';
 import { soloAdmin } from '../auth/roles.js';
+import { vencerCotizaciones } from '../vigencia.js';
 
 const r = Router();
 
 // PATCH /api/cotizaciones/:id/aprobar
 // regresa 200: { id, folio, estado: 'Aprobada' }   ·   404 si no existe
 // 403 si quien aprueba no es administrador (roles)
-// 409 si no está Pendiente o si algún equipo ya está apartado en esas fechas (HU-02a)
+// 409 si no está Pendiente (o ya venció, A1) o si algún equipo ya está apartado en esas fechas (HU-02a)
 r.patch('/:id/aprobar', soloAdmin, async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id) || id < 1 || id > 2147483647) throw errorHttp(404, 'Cotización no encontrada');
@@ -21,8 +22,10 @@ r.patch('/:id/aprobar', soloAdmin, async (req, res) => {
     await db.query('BEGIN');
     // Un solo aprobado a la vez: así dos cotizaciones no apartan las mismas fechas al mismo tiempo.
     await db.query("SELECT pg_advisory_xact_lock(hashtext('rentas-maquinaria.apartados'))");
+    await vencerCotizaciones(db);   // A1: una que ya pasó sus 15 días no se aprueba
     const { rows: [cotizacion] } = await db.query('SELECT estado FROM cotizaciones WHERE id = $1', [id]);
     if (!cotizacion) throw errorHttp(404, 'Cotización no encontrada');
+    if (cotizacion.estado === 'Vencida') throw errorHttp(409, 'Esta cotización ya venció: pasaron 15 días desde que se pidió.');
     if (cotizacion.estado !== 'Pendiente') throw errorHttp(409, 'Solo se aprueban cotizaciones Pendientes');
 
     const { rows: lineas } = await db.query(

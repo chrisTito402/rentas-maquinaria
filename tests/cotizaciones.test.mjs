@@ -4,6 +4,7 @@ import { once } from 'node:events';
 import { app } from '../backend/src/app.js';
 import { query, pool } from '../backend/src/db.js';
 import { listarEquipos } from '../backend/src/catalogo.js';
+import { rangosOcupados } from '../backend/src/rutas/ocupadas.rutas.js';
 import { randomBytes } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { cifrarUsuario, indiceUsuario, hashContrasena } from '../backend/src/auth/credenciales.js';
@@ -350,4 +351,54 @@ test('A4 · se guardan el código postal y la colonia del cliente', async (t) =>
   const { datos } = await pedir('GET', `/api/cotizaciones/${creada.datos.id}`);
   assert.equal(datos.cliente.codigoPostal, '85000');
   assert.equal(datos.cliente.colonia, 'Ciudad Obregón Centro');
+});
+
+// A1 · Vigencia de 15 días naturales (re-presentación del Sprint 1)
+const crearConEdad = async (t, dias, aprobar = false) => {
+  const creada = await pedir('POST', '/api/cotizaciones/web', solicitud);
+  assert.equal(creada.status, 201);
+  t.after(() => borrarCotizacion(creada.datos.id));
+  if (aprobar) assert.equal((await pedir('PATCH', `/api/cotizaciones/${creada.datos.id}/aprobar`)).status, 200);
+  await query(`UPDATE cotizaciones SET creada_en = NOW() - make_interval(days => $2::int) WHERE id = $1`, [creada.datos.id, dias]);
+  return creada.datos;
+};
+const estadoDe = async (id) => (await pedir('GET', `/api/cotizaciones/${id}`)).datos.estado;
+
+test('A1 · una Pendiente de hace 14 días sigue Pendiente', async (t) => {
+  if (!hayBase) return t.skip('sin PostgreSQL');
+  const cotizacion = await crearConEdad(t, 14);
+  assert.equal(await estadoDe(cotizacion.id), 'Pendiente');
+});
+
+test('A1 · una Pendiente de hace 15 días queda Vencida y ya no se puede aprobar', async (t) => {
+  if (!hayBase) return t.skip('sin PostgreSQL');
+  const cotizacion = await crearConEdad(t, 15);
+  assert.equal(await estadoDe(cotizacion.id), 'Vencida');
+  const aprobar = await pedir('PATCH', `/api/cotizaciones/${cotizacion.id}/aprobar`);
+  assert.equal(aprobar.status, 409);
+  assert.match(aprobar.datos.error, /venció/);
+  const { datos } = await pedir('GET', '/api/cotizaciones?estado=Vencida');
+  assert.ok(datos.some((c) => c.id === cotizacion.id));
+});
+
+test('A1 · una Aprobada sin unidades asignadas vence y libera sus fechas', async (t) => {
+  if (!hayBase) return t.skip('sin PostgreSQL');
+  const cotizacion = await crearConEdad(t, 16, true);
+  assert.equal(await estadoDe(cotizacion.id), 'Vencida');
+  const ocupadas = await rangosOcupados({ query }, solicitud.lineas[0].equipoId);
+  assert.ok(!ocupadas.some((rango) => rango.folio === cotizacion.folio));
+});
+
+test('A1 · una Aprobada con unidades ya asignadas por Operación no vence', async (t) => {
+  if (!hayBase) return t.skip('sin PostgreSQL');
+  const cotizacion = await crearConEdad(t, 20, true);
+  const unidad = 'PRUEBA-A1-' + randomBytes(4).toString('hex');
+  await query('INSERT INTO operacion_equipos (id, datos) VALUES ($1, $2)', [unidad, { id: unidad, state: 'apartado' }]);
+  await query('INSERT INTO operacion_rentas (id, equipo_id, datos) VALUES ($1, $1, $2)',
+    [unidad, { id: unidad, unit: unidad, cotizacionId: cotizacion.id, status: 'apartado' }]);
+  t.after(async () => {
+    await query('DELETE FROM operacion_rentas WHERE id = $1', [unidad]);
+    await query('DELETE FROM operacion_equipos WHERE id = $1', [unidad]);
+  });
+  assert.equal(await estadoDe(cotizacion.id), 'Aprobada');
 });

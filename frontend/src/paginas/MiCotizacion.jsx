@@ -12,6 +12,7 @@ import { validarCliente } from '@compartido/validarCliente.js';
 import { MAX_NOTAS } from '@compartido/constantes.js';
 import { calcularCostos } from '@compartido/costos.js';
 import { dinero } from '@compartido/formato.js';
+import { DIAS_VIGENCIA, fechaVigencia } from '@compartido/vigencia.js';
 
 const CLIENTE_INICIAL = { nombre: '', telefono: '', correo: '', empresa: '', codigoPostal: '', municipio: '', colonia: '', direccion: '' };
 const ETIQUETAS = { nombre: 'Nombre', telefono: 'Teléfono', correo: 'Correo', empresa: 'Empresa', codigoPostal: 'Código postal', municipio: 'Municipio', colonia: 'Colonia', direccion: 'Calle y número' };
@@ -77,6 +78,11 @@ export default function MiCotizacion() {
           <li>Tú decides si la aceptas. Hasta entonces no hay cobro ni compromiso.</li>
         </ol>
       </div>
+      {/* Ajuste A1: vigencia de 15 días naturales */}
+      <p className="solicitud-nota">
+        Tu cotización es válida por {DIAS_VIGENCIA} días naturales, hasta el <strong>{fechaVigencia(recibida.creadaEn ?? Date.now())}</strong>.
+        Si para esa fecha no se confirma, se cancela automáticamente y puedes pedir una nueva.
+      </p>
       <div className="confirmacion__acciones">
         <Link className="f-btn f-btn--primario" to="/">Ir al catálogo de maquinaria</Link>
       </div>

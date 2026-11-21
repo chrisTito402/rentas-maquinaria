@@ -10,7 +10,8 @@ export const MUNICIPIOS = [
 ];
 
 // "Rechazada" la decide el personal comercial; "No aceptada" la decide el cliente.
-export const ESTADOS = ['Pendiente', 'Aprobada', 'Rechazada', 'Aceptada', 'No aceptada'];
+// "Vencida" la pone el sistema a los 15 días (A1, compartido/vigencia.js).
+export const ESTADOS = ['Pendiente', 'Aprobada', 'Rechazada', 'Aceptada', 'No aceptada', 'Vencida'];
 export const ORIGENES = ['Web', 'Panel'];
 // Una cotización Aprobada o Aceptada aparta los equipos en sus fechas (HU-02a).
 export const ESTADOS_QUE_APARTAN = ['Aprobada', 'Aceptada'];
