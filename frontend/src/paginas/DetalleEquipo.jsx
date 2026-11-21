@@ -87,8 +87,9 @@ export default function DetalleEquipo() {
 
   return (
     <>
+      <Link className="f-volver f-volver--boton" to="/">← Volver al catálogo de maquinaria</Link>
       <nav className="migas" aria-label="Ruta">
-        <Link className="f-volver" to="/">← Volver al catálogo de maquinaria</Link>
+        <Link className="f-volver" to="/">Catálogo de maquinaria</Link>
         <span aria-hidden="true">/</span>
         <span>{equipo.tipo}</span>
         <span aria-hidden="true">/</span>
